@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing</title>
+<title>Piddinghoe Lake Sailing — Course Improved</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -73,7 +73,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
   <button onclick="showMenu()" style="margin-left:auto;font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #4a8a30;background:#1a3a10;color:#7ab870;cursor:pointer">↺ Menu</button>
   <button onclick="toggleFS()" style="font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #4a8a30;background:#1a3a10;color:#7ab870;cursor:pointer">⛶</button>
 </div>
-<div id="tip">H=hint · A/D+W/S=steer/sail · scroll=sail · ←→↑↓=P2 local</div>
+<div id="tip">H=next-3-target route hint · A/D+W/S=steer/sail · scroll=sail · ←→↑↓=P2 local</div>
 
 <div id="game-area">
   <!-- My touch panel (left, always shown) -->
@@ -258,7 +258,14 @@ function btwn(b){let t=lineT(b.x,b.y);return t>-.15&&t<1.15;}
 function fW(b){return lineDot(b.x,b.y)<-HR;}
 function fE(b){return lineDot(b.x,b.y)>HR;}
 const PT_X1=205,PT_X2=750,PT_Y=573,PT_H=15;
-const ROUND_R=68;
+const ROUND_R=78;
+const LAKE_CENTRE={x:490,y:310};
+const START_FAR_SIGN=(lineDot(LXM+LNX*80,LYM+LNY*80)>lineDot(LXM-LNX*80,LYM-LNY*80))?1:-1;
+function sideDotFar(){return START_FAR_SIGN;}
+function farStartPoint(dist=86){return{x:LXM+LNX*dist*START_FAR_SIGN,y:LYM+LNY*dist*START_FAR_SIGN};}
+function centreStartPoint(dist=72){return{x:LXM-LNX*dist*START_FAR_SIGN,y:LYM-LNY*dist*START_FAR_SIGN};}
+function fullyFarSide(b){return lineDot(b.x,b.y)*START_FAR_SIGN>HR+2;}
+function fullyCentreSide(b){return lineDot(b.x,b.y)*START_FAR_SIGN<-(HR+2);}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    AUDIO
@@ -302,7 +309,7 @@ function mkBoat(slot){
     // AI state
     aiTackSide:null,aiTackTimer:0,aiEscapeTimer:0,aiEscapeHead:null,
     // Remote (online) — position received from Firebase
-    remote:false,lastSeen:0};
+    remote:false,lastSeen:0,prevLineDot:lineDot(sp.x,sp.y)};
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -326,21 +333,33 @@ function nearMk(b,m,e=50){return Math.sqrt((b.x-m.x)**2+(b.y-m.y)**2)<m.r+e;}
    MARK ROUNDING — track arc swept around mark centre
    ═══════════════════════════════════════════════════════════════════════════ */
 function checkRound(b,id,mk){
+  // Robust buoy rounding recognition:
+  // 1) Enter a generous rounding circle around the mark.
+  // 2) Accumulate angular sweep while inside the circle.
+  // 3) Accept once the boat has either swept about 70° while still inside,
+  //    or exits having swept about 55°. This avoids the old problem where a
+  //    correct-looking rounding was missed because the boat left the circle
+  //    before the stricter 90° test completed.
   let dx=b.x-mk.x,dy=b.y-mk.y,dd=Math.sqrt(dx*dx+dy*dy);
   let inZone=dd<ROUND_R;
-  if(!b.roundSt[id])b.roundSt[id]={inZone:false,prevAng:null,totalSweep:0,done:false,entryAng:null};
+  if(!b.roundSt[id])b.roundSt[id]={inZone:false,prevAng:null,totalSweep:0,done:false,entryAng:null,minDist:9999};
   let rs=b.roundSt[id];
   if(rs.done)return false;
   let curAng=Math.atan2(dy,dx);
+  rs.minDist=Math.min(rs.minDist,dd);
   if(inZone){
-    if(!rs.inZone){rs.inZone=true;rs.entryAng=curAng;rs.prevAng=curAng;rs.totalSweep=0;}
-    else{let d=curAng-rs.prevAng;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;rs.totalSweep+=d;rs.prevAng=curAng;}
+    if(!rs.inZone){rs.inZone=true;rs.entryAng=curAng;rs.prevAng=curAng;rs.totalSweep=0;rs.minDist=dd;}
+    else{
+      let d=curAng-rs.prevAng;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;
+      rs.totalSweep+=d;rs.prevAng=curAng;
+      if(Math.abs(rs.totalSweep)>=Math.PI*0.39 && rs.minDist<ROUND_R-8){rs.done=true;return true;}
+    }
   } else if(rs.inZone){
     rs.inZone=false;
-    let swept=Math.abs(rs.totalSweep),diff=curAng-rs.entryAng;
-    while(diff>Math.PI)diff-=2*Math.PI;while(diff<-Math.PI)diff+=2*Math.PI;
-    if(swept>=Math.PI/2&&Math.abs(diff)>=Math.PI/3){rs.done=true;return true;}
-    rs.prevAng=null;rs.totalSweep=0;rs.entryAng=null;
+    let swept=Math.abs(rs.totalSweep);
+    let diff=curAng-rs.entryAng;while(diff>Math.PI)diff-=2*Math.PI;while(diff<-Math.PI)diff+=2*Math.PI;
+    if((swept>=Math.PI*0.31 && rs.minDist<ROUND_R-6) || (swept>=Math.PI*0.42)) {rs.done=true;return true;}
+    rs.prevAng=null;rs.totalSweep=0;rs.entryAng=null;rs.minDist=9999;
   }
   return false;
 }
@@ -418,7 +437,7 @@ function aiCtrl(b,dt){
 
   // ── NORMAL ROUTING ────────────────────────────────────────────────────────
   let tgt=null,tgtOff=0;
-  if(phase==='pre'||!b.started){tgt={x:LXM-LNX*70,y:LYM-LNY*70};}
+  if(phase==='pre'||!b.started){tgt=farStartPoint(92);}
   else if(b.leg===1){
     // Approach buoy from downwind side (offset past it), not straight at centre
     tgt={x:BU.x+30,y:BU.y+20};tgtOff=ROUND_R+5;
@@ -491,14 +510,23 @@ function updBoat(b,dt,tL,tR,shI,shO){
   b.x=res.x;b.y=res.y;
 
   if(phase==='race'){
-    let ns=Math.sign(lineDot(b.x,b.y)),jC=(ns!==b.lSide&&b.lSide!==0&&ns!==0);
+    let curLD=lineDot(b.x,b.y);
+    let ns=Math.sign(curLD),jC=(ns!==b.lSide&&b.lSide!==0&&ns!==0);
     let velDot=b.vx*LNX+b.vy*LNY;
     if(ns!==0)b.lSide=ns;
-    if(!b.started){if(jC&&ns<0&&btwn(b)&&velDot<-0.3)advCourse(b);}
+    if(!b.started){
+      // Valid start: the whole boat must have been on the far side of the line,
+      // then cross the line sailing toward the centre side of the lake.
+      let wasFar=b.prevLineDot!==undefined ? b.prevLineDot*START_FAR_SIGN>HR+2 : false;
+      let nowCentre=lineDot(b.x,b.y)*START_FAR_SIGN<-(HR+2);
+      let movingCentre=velDot*START_FAR_SIGN<-0.25;
+      if(jC&&wasFar&&nowCentre&&btwn(b)&&movingCentre)advCourse(b);
+    }
     else if(b.leg===1){if(checkRound(b,'BU',BU))advCourse(b);}
     else if(b.leg===2){if(checkRound(b,'GR',GR))advCourse(b);}
     else if(b.leg===3&&b.lCD<=0){if(jC&&ns>0&&btwn(b)&&velDot>0.3)advCourse(b);}
     else if(b.leg===4&&b.lCD<=0){if(checkRound(b,'PK',S2)||checkRound(b,'PK1',S1))advCourse(b);}
+    b.prevLineDot=curLD;
   }
 
   let tl=b.trail[b.trail.length-1];
@@ -655,7 +683,7 @@ function drawHint(b){
   ctx.save();ctx.globalAlpha=b.hA;
   if(b.hp.length>1){let a=b.hp[0],bp2=b.hp[1];ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1.5;ctx.setLineDash([3,5]);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(bp2.x,bp2.y);ctx.stroke();ctx.setLineDash([]);}
   const SC2=['rgba(80,160,255,1)','rgba(40,200,100,1)','rgba(255,160,50,1)'];
-  for(let i=1;i<b.hp.length-1;i++){let a=b.hp[i],bp2=b.hp[i+1],si=bp2.si!==undefined?bp2.si:0,col=SC2[si%SC2.length];ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.setLineDash([9,6]);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(bp2.x,bp2.y);ctx.stroke();ctx.setLineDash([]);if(bp2.isG&&bp2.lb){ctx.font='bold 10px sans-serif';let tw=ctx.measureText(bp2.lb).width;ctx.fillStyle='rgba(0,0,0,.65)';ctx.beginPath();ctx.roundRect(bp2.x+8,bp2.y-8,tw+8,16,3);ctx.fill();ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(bp2.lb,bp2.x+12,bp2.y);}}
+  for(let i=1;i<b.hp.length-1;i++){let a=b.hp[i],bp2=b.hp[i+1],si=bp2.si!==undefined?bp2.si:0,col=SC2[si%SC2.length];ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.setLineDash([9,6]);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(bp2.x,bp2.y);ctx.stroke();ctx.setLineDash([]);if(bp2.lb){ctx.font='bold 10px sans-serif';let tw=ctx.measureText(bp2.lb).width;ctx.fillStyle='rgba(0,0,0,.65)';ctx.beginPath();ctx.roundRect(bp2.x+8,bp2.y-8,tw+8,16,3);ctx.fill();ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(bp2.lb,bp2.x+12,bp2.y);}}
   ctx.restore();
 }
 function drawTrail(b){if(!b||b.trail.length<2)return;ctx.strokeStyle=b.col+'55';ctx.lineWidth=1.5;ctx.beginPath();let pu=true;b.trail.forEach(p=>{if(!p){pu=true;return;}if(pu){ctx.moveTo(p.x,p.y);pu=false;}else ctx.lineTo(p.x,p.y);});ctx.stroke();}
@@ -707,25 +735,51 @@ function render(t){
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   HINT SYSTEM
+   HINT SYSTEM — shows a best-effort route to the next 3 course targets
    ═══════════════════════════════════════════════════════════════════════════ */
 function hVec(h){let r=h*Math.PI/180;return{x:Math.sin(r),y:-Math.cos(r)};}
 function dHead(P,T){return((Math.atan2(T.x-P.x,-(T.y-P.y))*180/Math.PI)+360)%360;}
-function validH(h){return Math.abs(sDiff(h,wFrom))>=NG;}
-function r2pHint(P,T){
-  let h=dHead(P,T);if(validH(h))return[{x:T.x,y:T.y}];
-  let cwp=(wFrom+38)%360,cws=(wFrom-38+360)%360,VP=hVec(cwp),VS=hVec(cws);
-  // Just return direct approximation for hint
-  return[{x:T.x,y:T.y}];
+function validH(h){return Math.abs(sDiff(h,wFrom))>=NG+4;}
+function rayIntersect(P,d1,T,d2){let det=d1.x*d2.y-d1.y*d2.x;if(Math.abs(det)<.0001)return null;let dx=T.x-P.x,dy=T.y-P.y;let t=(dx*d2.y-dy*d2.x)/det,u=(dx*d1.y-dy*d1.x)/det;return{t,u,x:P.x+d1.x*t,y:P.y+d1.y*t};}
+function safePt(p){return{x:clamp(p.x,172,838),y:clamp(p.y,58,575)};}
+function tackRoute(P,T){
+  // If the target is not in the no-go zone, draw a direct leg.
+  let direct=dHead(P,T);if(validH(direct))return[{...safePt(T)}];
+  // Otherwise draw a single tack via the port/starboard close-hauled headings.
+  let hp=(wFrom+40)%360,hs=(wFrom-40+360)%360,VP=hVec(hp),VS=hVec(hs);
+  let opts=[];
+  let a=rayIntersect(P,VP,T,{x:-VS.x,y:-VS.y});if(a&&a.t>25&&a.u>10)opts.push({p:safePt({x:a.x,y:a.y}),d:d2(P,a)+d2(a,T)});
+  let b=rayIntersect(P,VS,T,{x:-VP.x,y:-VP.y});if(b&&b.t>25&&b.u>10)opts.push({p:safePt({x:b.x,y:b.y}),d:d2(P,b)+d2(b,T)});
+  if(opts.length){opts.sort((x,y)=>x.d-y.d);return[{...opts[0].p,lb:'Tack'},{...safePt(T)}];}
+  // Fallback if geometry is awkward near the bank.
+  let v=hVec(hp);return[{...safePt({x:P.x+v.x*150,y:P.y+v.y*150}),lb:'Tack'},{...safePt(T)}];
+}
+function futureTargets(b,count=3){
+  let out=[];
+  function push(lb,tg,si){out.push({lb,tg,si});}
+  let lap=b.started?b.lap:1,leg=b.started?b.leg:0;
+  while(out.length<count && lap<=TL){
+    if(!b.started && leg===0){push('Get behind start',farStartPoint(92),0);push('Cross start → centre',centreStartPoint(72),0);leg=1;continue;}
+    if(leg<=1)push('① Blue buoy', {x:BU.x+32,y:BU.y+18},0);
+    if(leg<=2)push('② Green buoy',{x:GR.x-26,y:GR.y-22},1);
+    if(leg<=3)push('Cross line →',centreStartPoint(74),2);
+    if(leg<=4)push(lap>=TL?'Finish at pink':'Round pink', {x:S2.x+28,y:S2.y-8},2);
+    lap++;leg=1;
+  }
+  return out.slice(0,count);
 }
 function buildHint(b){
   if(!b)return;
-  let v=hVec(b.head),cm={x:clamp(b.x+v.x*60,170,840),y:clamp(b.y+v.y*60,55,568)};
-  let tg=b.leg===1?{x:BU.x,y:BU.y}:b.leg===2?{x:GR.x,y:GR.y}:b.leg===3?{x:LXM+LNX*60,y:LYM+LNY*60}:b.leg===4?{x:S2.x,y:S2.y}:{x:LXM-LNX*60,y:LYM-LNY*60};
-  b.hp=[{x:b.x,y:b.y},{x:cm.x,y:cm.y},{x:tg.x,y:tg.y,isG:true,lb:nll(b),si:0}];
-  b.hT=5;b.hA=1;
+  let pts=[{x:b.x,y:b.y}];
+  let cur={x:b.x,y:b.y};
+  let targets=futureTargets(b,3);
+  targets.forEach((t,i)=>{
+    let leg=tackRoute(cur,t.tg);
+    leg.forEach((p,j)=>pts.push({x:p.x,y:p.y,lb:j===leg.length-1?t.lb:p.lb,si:t.si,isG:j===leg.length-1}));
+    cur=t.tg;
+  });
+  b.hp=pts;b.hT=7;b.hA=1;
 }
-
 /* ═══════════════════════════════════════════════════════════════════════════
    SAIL TRACK SETUP
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -953,6 +1007,7 @@ document.addEventListener('keydown',e=>{
   keys[e.key]=true;
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))e.preventDefault();
   if((e.key==='h'||e.key==='H')&&boats[mySlotIdx]){e.preventDefault();buildHint(boats[mySlotIdx]);}
+  if((e.key==='/'||e.key==='?')&&localP2&&boats[1]){e.preventDefault();buildHint(boats[1]);}
 });
 document.addEventListener('keyup',e=>{keys[e.key]=false;});
 document.getElementById('c').addEventListener('wheel',e=>{ev(e);let b=boats[mySlotIdx];if(!b)return;b.sa=clamp(b.sa+(e.deltaY>0?-5:5),MSA,90);if(updTMy)updTMy();},{passive:false});
