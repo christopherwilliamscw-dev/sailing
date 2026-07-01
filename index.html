@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — Happier Prize Face v35</title>
+<title>Piddinghoe Lake Sailing — Happier Prize Face v46</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -280,6 +280,173 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 #prizeBoyFace:not([data-prize]) .mouth:before{display:block !important;content:"" !important;position:absolute !important;left:7px !important;top:1px !important;width:41px !important;height:8px !important;background:#fff8e8 !important;border-radius:0 0 50% 50% !important;}
 #prizeBoyFace:not([data-prize]) .mouth:after{display:block !important;content:"" !important;position:absolute !important;left:18px !important;bottom:-4px !important;width:21px !important;height:10px !important;background:#ff7fa0 !important;border-radius:50% 50% 0 0 !important;}
 #prizeBoyFace[data-prize] .mouth{left:63px !important;top:128px !important;width:52px !important;height:25px !important;}
+
+/* v46 DEV menu: cover the whole game so lake, HUD and controls disappear */
+#devScreen{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:9999 !important;
+  background:#051405 !important;
+  padding-top:58px !important;
+}
+#devScreen > div{
+  position:relative;
+  z-index:10000;
+}
+
+
+/* v47: larger touch-screen controls */
+.tp{
+  width:92px !important;
+  padding:8px 6px !important;
+  gap:8px !important;
+}
+.rrow{
+  gap:8px !important;
+}
+.rb{
+  width:52px !important;
+  height:52px !important;
+  min-width:52px !important;
+  min-height:52px !important;
+  border-width:4px !important;
+  font-size:25px !important;
+  line-height:1 !important;
+  box-shadow:0 4px 10px rgba(0,0,0,.35), inset 0 2px 0 rgba(255,255,255,.14) !important;
+}
+.plbl{
+  font-size:10px !important;
+  padding:4px 3px !important;
+}
+.slbl{
+  font-size:10px !important;
+}
+.st{
+  width:18px !important;
+  border-radius:9px !important;
+  border-width:2px !important;
+}
+.sth{
+  width:28px !important;
+  height:28px !important;
+  border-width:3px !important;
+}
+.kh{
+  font-size:9px !important;
+}
+.btn-sm{
+  font-size:14px !important;
+  padding:10px 18px !important;
+  min-height:46px !important;
+}
+#devScreen .btn-sm,
+#menuScreen .btn,
+#localScreen .btn,
+#onlineScreen .btn,
+#waitScreen .btn,
+#mo .btn{
+  min-height:50px !important;
+  padding:11px 22px !important;
+}
+#devBtn,
+#hud button{
+  min-height:30px !important;
+  padding:5px 9px !important;
+  font-size:11px !important;
+}
+#ks .k{
+  font-size:10px !important;
+  padding:2px 5px !important;
+}
+
+
+/* v48: two-column victory summary so awards do not run off the screen */
+#mo{
+  gap:5px !important;
+  padding:8px 8px 6px !important;
+  justify-content:center !important;
+}
+#mo::before{
+  width:min(600px,62vw) !important;
+  min-height:250px !important;
+}
+#mo h3{
+  font-size:18px !important;
+  margin:0 !important;
+}
+#mo p{
+  font-size:11px !important;
+  line-height:1.25 !important;
+  margin:0 !important;
+}
+#mo .prize-choice{
+  gap:6px !important;
+  margin-top:0 !important;
+}
+#mo .prize-choice button{
+  font-size:11px !important;
+  padding:5px 10px !important;
+  min-height:34px !important;
+}
+#prizeDisplay.prize-row,
+#prizeDisplay{
+  min-height:76px !important;
+  max-height:88px !important;
+  margin:0 auto 2px !important;
+  gap:12px !important;
+}
+#prizeDisplay .hotdog-award,
+#prizeDisplay .pizza-award,
+#prizeDisplay .donut-award,
+#prizeDisplay .watermelon-award,
+#prizeDisplay .icepop-award,
+#prizeDisplay .cocoa-award{
+  transform:scale(.62) !important;
+  transform-origin:center center !important;
+  animation:none !important;
+}
+#achievementsDisplay.achievements-row{
+  display:grid !important;
+  grid-template-columns:repeat(2,minmax(205px,1fr)) !important;
+  gap:6px 8px !important;
+  align-items:stretch !important;
+  justify-items:stretch !important;
+  max-width:520px !important;
+  width:min(520px,58vw) !important;
+  margin:0 auto 3px !important;
+}
+#achievementsDisplay .achievement-card{
+  min-width:0 !important;
+  width:100% !important;
+  padding:5px 8px !important;
+  font-size:10px !important;
+  border-radius:10px !important;
+}
+#achievementsDisplay .achievement-card .big{
+  font-size:18px !important;
+  line-height:1 !important;
+}
+#achievementsDisplay .achievement-card b{
+  font-size:12px !important;
+}
+#achievementsDisplay .achievement-card small{
+  font-size:9px !important;
+  margin-top:1px !important;
+}
+#mb{
+  max-width:520px !important;
+}
+@media (max-height:700px){
+  #mo{gap:3px !important;padding-top:3px !important;padding-bottom:3px !important;}
+  #mo h3{font-size:16px !important;}
+  #achievementsDisplay.achievements-row{gap:4px 7px !important;}
+  #achievementsDisplay .achievement-card{padding:4px 7px !important;}
+  #prizeDisplay.prize-row,#prizeDisplay{min-height:62px !important;max-height:72px !important;}
+}
+@media (max-width:850px){
+  #achievementsDisplay.achievements-row{width:min(500px,82vw) !important;grid-template-columns:repeat(2,minmax(180px,1fr)) !important;}
+  #mo::before{width:min(560px,88vw) !important;}
+}
 
 </style>
 </head>
@@ -702,6 +869,25 @@ function aiRoundingTarget(mk,prev,next,b,id){
   idx=Math.min(16,idx+Math.floor((clamp(b.spd,0,5)/2)*ap.lookAhead));
   return pts[idx];
 }
+
+function aiPink3Target(b){
+  if(!b.roundSt)b.roundSt={};
+  const opts=[{id:'PINK_A',mk:S1,other:S2},{id:'PINK_B',mk:S2,other:S1}];
+  // Keep the first chosen pink once selected so the boat does not dither.
+  if(!b.aiPinkChoice){
+    b.aiPinkChoice=(Math.hypot(b.x-S1.x,b.y-S1.y)<=Math.hypot(b.x-S2.x,b.y-S2.y))?'PINK_A':'PINK_B';
+  }
+  let o=opts.find(x=>x.id===b.aiPinkChoice)||opts[0];
+  const rs=(b.roundSt&&b.roundSt[o.id])||{};
+  const along=normVec({x:o.mk.x-o.other.x,y:o.mk.y-o.other.y}); // from other pink, through chosen pink, outwards
+  const gate={x:o.mk.x-along.x*36,y:o.mk.y-along.y*36};        // between the pink buoys, close to chosen one
+  const outside={x:o.mk.x+along.x*(AI_ROUND_R*.95),y:o.mk.y+along.y*(AI_ROUND_R*.95)};
+  const exit={x:o.mk.x+along.x*(AI_ROUND_R*.55)+(BU.x-o.mk.x)*.28,y:o.mk.y+along.y*(AI_ROUND_R*.55)+(BU.y-o.mk.y)*.28};
+  if(!rs.lineCrossed)return safePt(gate);
+  if(!rs.turnedAway)return safePt(outside);
+  if(!rs.movingToNext)return safePt(exit);
+  return safePt(BU);
+}
 function aiSailableHeading(b,tgt,dt){
   // Choose a heading that acknowledges the no-go zone and boat speed.
   // Direct line is used only when it is clearly outside the dead zone. Upwind,
@@ -739,6 +925,64 @@ function nextPointAfterMark(b,leg,mk){
   return centreStartPoint(70);
 }
 function finishAwayValid(b,prevX,prevY,curX,curY){return validFinishCross(b,prevX,prevY,curX,curY);}
+
+function checkPink3Round(b,prevX,prevY,curX,curY){
+  // v49 Mark 3 rule: to round either pink buoy correctly the boat must:
+  // 1) cross the finite line BETWEEN the two pink buoys;
+  // 2) then go round the chosen pink on the outside, away from the other pink;
+  // 3) leave towards Mark 1.
+  // This stops a boat from just touching the inside of a pink buoy and being
+  // given the lap.
+  if(!b.roundSt)b.roundSt={};
+  const lineCrossed=crossedLineSegment(prevX,prevY,curX,curY);
+  const curFar=lineDot(curX,curY)*START_FAR_SIGN>-HR;
+  const prevCentre=lineDot(prevX,prevY)*START_CENTRE_SIGN>-HR;
+  const crossedOut=lineCrossed && (curFar||prevCentre);
+  const options=[{id:'PINK_A',mk:S1,other:S2},{id:'PINK_B',mk:S2,other:S1}];
+  let any=false;
+  options.forEach(o=>{
+    if(!b.roundSt[o.id]){
+      b.roundSt[o.id]={id:o.id,inZone:false,lineCrossed:false,turnedAway:false,movingToNext:false,done:false,debugMsg:'waiting for line cross',dist:9999,awayDot:0,lastDistToNext:9999};
+    }
+    const rs=b.roundSt[o.id];
+    if(rs.done)return;
+    const dx=b.x-o.mk.x,dy=b.y-o.mk.y;
+    const dist=Math.hypot(dx,dy);
+    const inZone=dist<ROUND_R;
+    const toOther=normVec({x:o.other.x-o.mk.x,y:o.other.y-o.mk.y});
+    const boatVec=normVec({x:dx,y:dy});
+    const awayDot=dotVec(boatVec,toOther); // negative = away from the other pink buoy
+    const distToNext=d2(b,BU);
+    rs.dist=dist;rs.awayDot=awayDot;
+    if(crossedOut){
+      rs.lineCrossed=true;
+      rs.debugMsg='line between pink buoys crossed';
+    }
+    if(inZone){
+      if(!rs.inZone){rs.inZone=true;rs.lastDistToNext=distToNext;rs.debugMsg=rs.lineCrossed?'entered pink zone after line cross':'entered pink zone before line cross';}
+      if(rs.lineCrossed && awayDot<-0.16){
+        rs.turnedAway=true;
+        rs.debugMsg='turned away from other pink';
+      }
+      if(rs.turnedAway && (distToNext<rs.lastDistToNext-4 || dotVec(boatVec,normVec({x:BU.x-o.mk.x,y:BU.y-o.mk.y}))>0.12)){
+        rs.movingToNext=true;
+        rs.debugMsg='leaving towards Mark 1';
+      }
+      rs.lastDistToNext=distToNext;
+    }else{
+      if(rs.inZone){
+        rs.debugMsg=rs.lineCrossed?(rs.turnedAway?(rs.movingToNext?'left after correct pink rounding':'left but not towards Mark 1'):'left without turning away from other pink'):'left without crossing line';
+        if(rs.lineCrossed&&rs.turnedAway&&rs.movingToNext){
+          rs.done=true;
+          b.lastCourseDebug='Rounded '+o.id+' after crossing pink line and turning away';
+          any=true;
+        }
+      }
+      rs.inZone=false;
+    }
+  });
+  return any;
+}
 recalcCourseGeometry();
 loadCourseLayout();
 
@@ -848,6 +1092,37 @@ let flashMk=null,flashT=0;
 let postRaceReturn=false, postRaceWinner=null;
 let cdTime=10,lastCdSec=11,whistleDone=false;
 const keys={},tBtn={my:{l:0,r:0},p2:{l:0,r:0}};
+
+/* v51 FIX: restore keyboard controls after the start-button fix.
+   Use document-level listeners so A/S/W/D still work even after clicking a menu button.
+   Prevent default for game keys so the browser does not scroll or steal focus. */
+const GAME_KEYS=new Set(['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H','F9']);
+document.addEventListener('keydown',function(e){
+  if(GAME_KEYS.has(e.key)){
+    keys[e.key]=true;
+    if(['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H'].includes(e.key)) e.preventDefault();
+  }
+  if(e.key==='h'||e.key==='H'){
+    showRouteHint=true;
+  }
+  if(e.key==='F9'){
+    e.preventDefault();
+    if(e.shiftKey)devForceWin(0);
+    else if(e.ctrlKey||e.metaKey)devForceWin(1);
+    else devEndRaceCurrentLeader();
+  }
+},{passive:false});
+document.addEventListener('keyup',function(e){
+  if(GAME_KEYS.has(e.key)){
+    keys[e.key]=false;
+    if(['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H'].includes(e.key)) e.preventDefault();
+  }
+  if(e.key==='h'||e.key==='H'){
+    showRouteHint=false;
+  }
+},{passive:false});
+window.addEventListener('blur',function(){Object.keys(keys).forEach(k=>keys[k]=false);});
+
 function tb(who,k,v){tBtn[who][k]=v;}
 const sDrag={my:{on:false},p2:{on:false}};
 let updTMy=null,updTP2=null;
@@ -1177,7 +1452,13 @@ function devShiftWind(){let mag=45+Math.floor(Math.random()*46);let delta=(Math.
 function devAdvanceMyBoat(){ensureDevBoats();let b=boats[mySlotIdx]||boats[0];if(!b.started){b.started=true;b.t0=Date.now();b.lap=1;b.leg=1;}else advCourse(b);}
 function devSendPontoon(){ensureDevBoats();hideAllOverlays();phase='done';beginPostRaceReturn(boats[mySlotIdx]||boats[0]);}
 function devPrizeScreen(){ensureDevBoats();hideAllOverlays();document.getElementById('mt').textContent='🏆 Prize test';document.getElementById('mb').innerHTML='Choose a victory snack — hot chocolate included.';{let a=document.getElementById('achievementsDisplay');if(a)a.innerHTML='';}{let pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';}document.getElementById('mo').style.display='flex';{selectedPrizeKind=null;prizeFaceActive=false;let boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.add('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','false');}}beginPostRaceReturn(boats[mySlotIdx]||boats[0]);phase='done';}
-function toggleDevPanel(){let el=document.getElementById('devScreen');if(!el)return;el.style.display=(el.style.display==='flex')?'none':'flex';}
+function toggleDevPanel(){
+  const el=document.getElementById('devScreen');
+  if(!el)return;
+  const opening=el.style.display!=='flex';
+  hideAllOverlays();
+  el.style.display=opening?'flex':'none';
+}
 
 function advCourse(b){
   if(!b.started){
@@ -1260,9 +1541,9 @@ function aiCtrl(b,dt){
     tgt=aiRoundingTarget(GR,BU,(b.lap>=TL?farStartPoint(105):S1),b,'GR');
   }
   else if(b.leg===3){
-    // Choose the pink-buoy option with the easier clearance arc.
-    let t1=aiRoundingTarget(S1,GR,BU,b,'PINK_A'), t2=aiRoundingTarget(S2,GR,BU,b,'PINK_B');
-    tgt=(Math.hypot(b.x-t1.x,b.y-t1.y)<Math.hypot(b.x-t2.x,b.y-t2.y))?t1:t2;
+    // v49: to round Mark 3, first sail through the gate line between the
+    // two pink buoys, then go outside/away from the other pink, then leave to Mark 1.
+    tgt=aiPink3Target(b);
   }
   else if(b.leg===4){tgt=farStartPoint(82);}
   if(!tgt)return;
@@ -1334,9 +1615,9 @@ function updBoat(b,dt,tL,tR,shI,shO){
     else if(b.leg===1){if(checkRound(b,'BU',BU,{x:LXM,y:LYM},GR))advCourse(b);}
     else if(b.leg===2){if(checkRound(b,'GR',GR,BU,(b.lap>=TL?farStartPoint(105):S1)))advCourse(b);}
     else if(b.leg===3&&b.lCD<=0){
-      // Mark 3 is either of the two pink buoys that also define the start/finish line.
-      let nextAfterPink=BU;
-      if(checkRound(b,'PINK_A',S1,GR,nextAfterPink)||checkRound(b,'PINK_B',S2,GR,nextAfterPink))advCourse(b);
+      // v49: Mark 3 is not just a buoy touch. The boat must cross the line
+      // between the pink buoys, then round one pink away from the other pink.
+      if(checkPink3Round(b,ox,oy,b.x,b.y))advCourse(b);
     }
     else if(b.leg===4&&b.lCD<=0){
       // Finish after 3 laps: no pink rounding required, just cross the line away from the centre.
@@ -1948,6 +2229,7 @@ function setupTrack(tid,thid,who){
    GAME START HELPERS
    ═══════════════════════════════════════════════════════════════════════════ */
 function initGameCommon(mySlot){
+  Object.keys(keys).forEach(k=>keys[k]=false);
   selectedPrizeKind=null;prizeFaceActive=false;
   const pdCommon=document.getElementById('prizeDisplay');if(pdCommon)pdCommon.innerHTML='';
   loadCourseLayout();recalcCourseGeometry();
@@ -2196,68 +2478,77 @@ function updatePostRaceReturn(dt){
     const tg=b.postRaceHome||PONTOON_HOME[b.slot]||PONTOON_HOME[i%PONTOON_HOME.length];
     const dx=tg.x-b.x,dy=tg.y-b.y,dist=Math.sqrt(dx*dx+dy*dy);
     const moorHead=b.postRaceMoorHead!==undefined?b.postRaceMoorHead:(Math.abs(sDiff(90,wFrom))<Math.abs(sDiff(270,wFrom))?90:270);
-    if(dist<45)b.postRaceMooring=true;
-    let desired,targetSpd;
-    if(b.postRaceMooring){
-      desired=moorHead;
-      targetSpd=dist>8?Math.min(0.85,dist/45):0;
-      // Ease the boat gently onto its berth while aligning parallel to the pontoon.
-      b.x+=(tg.x-b.x)*Math.min(1,1.6*dt);
-      b.y+=(tg.y-b.y)*Math.min(1,1.6*dt);
-      b.sa=90;
-      // Luffing: ease the boom out so the sail lies broadly parallel to the wind,
-      // then let it flap a few degrees either side of that wind line.
-      const flap=Math.sin(now*8.5+b.slot*1.7)*8 + Math.sin(now*15+b.slot)*2;
-      const luffRel=relBoomParallelToWind(b,flap);
-      b.ssa+=(luffRel-b.ssa)*Math.min(1,5.5*dt);
-      b.dA=Math.min(10,b.dA+dt*4); // encourages a visible flapping / luffing effect
-    }else{
-      desired=((Math.atan2(dx,-dy)*180/Math.PI)+360)%360;
-      targetSpd=dist<90?Math.max(.45,dist/90*1.8):2.0;
-      b.sa=55;
-    }
-    const hd=sDiff(b.head,desired);
-    b.head=(b.head+Math.sign(hd)*Math.min(Math.abs(hd),70*dt)+360)%360;
-    b.spd+=(targetSpd-b.spd)*Math.min(1,2.8*dt);
-    if(b.postRaceMooring&&dist<8&&Math.abs(hd)<5){b.spd=0;b.vx=0;b.vy=0;b.head=moorHead;b.sa=90;b.ssa=relBoomParallelToWind(b,Math.sin(now*8.5+b.slot*1.7)*8);}
-    let hr=b.head*Math.PI/180;
-    b.vx=Math.sin(hr)*b.spd*18;
-    b.vy=-Math.cos(hr)*b.spd*18;
+    if(dist<36)b.postRaceMooring=true;
     if(!b.postRaceMooring){
-      let nx=b.x+b.vx*dt,ny=b.y+b.vy*dt;
-      let res=resolveShore(nx,ny,b.x,b.y);b.x=res.x;b.y=res.y;
+      // v49: pontoon return uses the same wind-aware AI heading logic, so boats
+      // tack if the pontoon is upwind instead of motoring straight through the no-go zone.
+      const routeTgt=safePt(tg);
+      const desH=aiSailableHeading(b,routeTgt,dt);
+      const hd=sDiff(b.head,desH);
+      b.head=(b.head+Math.sign(hd)*Math.min(Math.abs(hd),62*dt)+360)%360;
+      let ideal=optSA(awa(b));
+      if(b.spd<0.8)ideal=Math.min(90,ideal+10);
+      b.sa=clamp(ideal,MSA,90);
+
+      let aw=awa(b),ls=leeS(b),fl=isFlap(aw,b.sa);
+      let ts=(fl?Math.min(aw,90):b.sa)*ls;
+      let sd=ts-b.ssa,ms=300*dt;
+      b.ssa+=Math.abs(sd)<=ms?sd:Math.sign(sd)*ms;
+      let eff=sailEff(aw,Math.abs(b.ssa)),p=posOfSail(aw);
+      const wanted=Math.min(MAX_SPD*.72, dist<120?Math.max(.45,dist/80*1.4):MAX_SPD*.58);
+      b.spd+=(Math.min(wanted,p.f*eff*MAX_SPD)-b.spd)*2.1*dt;
+      b.spd=Math.max(0,Math.min(MAX_SPD*.75,b.spd));
+      let hr=b.head*Math.PI/180;
+      b.vx+=(Math.sin(hr)*b.spd*18-b.vx)*Math.min(1,4*dt);
+      b.vy+=(-Math.cos(hr)*b.spd*18-b.vy)*Math.min(1,4*dt);
+      let res=resolveShore(b.x+b.vx*dt,b.y+b.vy*dt,b.x,b.y);
+      if(res.hit){b.spd*=.55;b.aiTackSide=null;b.aiTackTimer=0;}
+      b.x=res.x;b.y=res.y;
+    }else{
+      // Final few metres: gently settle onto the berth and luff alongside the pontoon.
+      const hd=sDiff(b.head,moorHead);
+      b.head=(b.head+Math.sign(hd)*Math.min(Math.abs(hd),90*dt)+360)%360;
+      b.x+=(tg.x-b.x)*Math.min(1,1.5*dt);
+      b.y+=(tg.y-b.y)*Math.min(1,1.5*dt);
+      b.spd+=(0-b.spd)*Math.min(1,3*dt);
+      b.vx=0;b.vy=0;b.sa=90;
+      const flap=Math.sin(now*8.5+b.slot*1.7)*8 + Math.sin(now*15+b.slot)*2;
+      b.ssa+=(relBoomParallelToWind(b,flap)-b.ssa)*Math.min(1,5.5*dt);
+      b.dA=Math.min(10,b.dA+dt*4);
+      if(dist<7&&Math.abs(hd)<6){b.spd=0;b.head=moorHead;b.sa=90;}
     }
     let tl=b.trail[b.trail.length-1];
     if(!tl||Math.abs(b.x-tl.x)>2||Math.abs(b.y-tl.y)>2){b.trail.push({x:b.x,y:b.y});if(b.trail.length>400)b.trail.shift();}
   });
+}function devPrizeScreen(){
+  ensureDevBoats();hideAllOverlays();
+  document.getElementById('mt').textContent='🏆 Prize test';
+  document.getElementById('mb').innerHTML='Choose a victory snack — hot chocolate included.';
+  const a=document.getElementById('achievementsDisplay');if(a)a.innerHTML='';
+  document.getElementById('mo').style.display='flex';
+  setPrizeBoyWaiting();
+  beginPostRaceReturn(boats[mySlotIdx]||boats[0]);
+  phase='done';
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   COURSE EDITOR — draggable buoys before racing
-   ═══════════════════════════════════════════════════════════════════════════ */
-let courseEditMode=false,dragMark=null;
+
+
+/* v50 FIX: restore menu/setup/navigation functions that were accidentally lost in v49.
+   This fixes the start selection screen buttons doing nothing. */
+let courseEditMode=false, dragMark=null;
 function markLayout(){return{S1:{x:S1.x,y:S1.y},S2:{x:S2.x,y:S2.y},BU:{x:BU.x,y:BU.y},GR:{x:GR.x,y:GR.y}};}
 function applyMarkLayout(m){
   if(!m)return;
-  ['S1','S2','BU','GR'].forEach(k=>{if(m[k]&&Number.isFinite(m[k].x)&&Number.isFinite(m[k].y)){({S1,S2,BU,GR}[k]).x=m[k].x;({S1,S2,BU,GR}[k]).y=m[k].y;}});
+  const map={S1:S1,S2:S2,BU:BU,GR:GR};
+  ['S1','S2','BU','GR'].forEach(k=>{if(m[k]&&Number.isFinite(m[k].x)&&Number.isFinite(m[k].y)){map[k].x=m[k].x;map[k].y=m[k].y;}});
   recalcCourseGeometry();
 }
 function loadCourseLayout(){try{applyMarkLayout(JSON.parse(localStorage.getItem('piddinghoeCourseLayout')||'null'));}catch(e){}}
 function saveCourseLayout(){localStorage.setItem('piddinghoeCourseLayout',JSON.stringify(markLayout()));}
 function resetCourseLayout(){applyMarkLayout(DEFAULT_MARKS);saveCourseLayout();}
-function showCourseEditor(){cleanupFB();courseEditMode=true;phase='menu';boats=[];parts=[];cdDiv.style.display='none';hideAllOverlays();document.getElementById('editScreen').style.display='flex';}
-function finishCourseEditor(){saveCourseLayout();courseEditMode=false;showMenu();}
-function canvasPoint(evt){
-  const r=cv.getBoundingClientRect();
-  const e=evt.touches?evt.touches[0]:evt;
-  return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};
-}
-function nearestEditableMark(pt){
-  let best=null,bd=999;
-  [{id:'1 blue',mk:BU},{id:'2 green',mk:GR},{id:'pink A',mk:S1},{id:'pink B',mk:S2}].forEach(o=>{let d=Math.hypot(pt.x-o.mk.x,pt.y-o.mk.y);if(d<bd&&d<34){best=o.mk;bd=d;}});
-  return best;
-}
-function startDragMark(evt){if(!courseEditMode)return;let pt=canvasPoint(evt);dragMark=nearestEditableMark(pt);if(dragMark){ev(evt);}}
+function canvasPoint(evt){const r=cv.getBoundingClientRect();const e=evt.touches?evt.touches[0]:evt;return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};}
+function nearestEditableMark(pt){let best=null,bd=999;[{mk:BU},{mk:GR},{mk:S1},{mk:S2}].forEach(o=>{let d=Math.hypot(pt.x-o.mk.x,pt.y-o.mk.y);if(d<bd&&d<34){best=o.mk;bd=d;}});return best;}
+function startDragMark(evt){if(!courseEditMode)return;let pt=canvasPoint(evt);dragMark=nearestEditableMark(pt);if(dragMark)ev(evt);}
 function moveDragMark(evt){if(!courseEditMode||!dragMark)return;let pt=canvasPoint(evt);dragMark.x=clamp(pt.x,170,840);dragMark.y=clamp(pt.y,55,580);recalcCourseGeometry();ev(evt);}
 function endDragMark(){if(dragMark){saveCourseLayout();dragMark=null;}}
 cv.addEventListener('mousedown',startDragMark);
@@ -2268,112 +2559,33 @@ document.addEventListener('touchmove',moveDragMark,{passive:false});
 document.addEventListener('touchend',endDragMark);
 function drawEditableBuoys(){
   if(!courseEditMode)return;
-  ctx.save();
-  ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
-  [{mk:BU,c:'#3399ff',lab:'1'},{mk:GR,c:'#22bb66',lab:'2'},{mk:S1,c:'#ff69b4',lab:'P'},{mk:S2,c:'#ff69b4',lab:'P'}].forEach(o=>{
-    ctx.beginPath();ctx.arc(o.mk.x,o.mk.y,24,0,Math.PI*2);ctx.fillStyle=o.c+'55';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-    ctx.fillStyle='#fff';ctx.fillText(o.lab,o.mk.x,o.mk.y);
-  });
-  ctx.setLineDash([8,5]);ctx.strokeStyle='rgba(255,105,180,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(S1.x,S1.y);ctx.lineTo(S2.x,S2.y);ctx.stroke();ctx.setLineDash([]);
-  ctx.restore();
+  ctx.save();ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  [{mk:BU,c:'#3399ff',lab:'1'},{mk:GR,c:'#22bb66',lab:'2'},{mk:S1,c:'#ff69b4',lab:'P'},{mk:S2,c:'#ff69b4',lab:'P'}].forEach(o=>{ctx.beginPath();ctx.arc(o.mk.x,o.mk.y,24,0,Math.PI*2);ctx.fillStyle=o.c+'55';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.fillText(o.lab,o.mk.x,o.mk.y);});
+  ctx.setLineDash([8,5]);ctx.strokeStyle='rgba(255,105,180,.9)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(S1.x,S1.y);ctx.lineTo(S2.x,S2.y);ctx.stroke();ctx.setLineDash([]);ctx.restore();
 }
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   UI NAVIGATION
-   ═══════════════════════════════════════════════════════════════════════════ */
 function hideAllOverlays(){
-  ['menuScreen','localScreen','onlineScreen','waitScreen','editScreen','devScreen'].forEach(id=>{
-    document.getElementById(id).style.display='none';
-  });
-  document.getElementById('mo').style.display='none';
-  {const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.remove('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','true');}}
+  ['menuScreen','localScreen','onlineScreen','waitScreen','editScreen','devScreen'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const mo=document.getElementById('mo');if(mo)mo.style.display='none';
+  const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.remove('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','true');}
 }
 function showMenu(){
-  selectedPrizeKind=null;prizeFaceActive=false;
-  const pdMenu=document.getElementById('prizeDisplay');if(pdMenu)pdMenu.innerHTML='';
-  courseEditMode=false;cleanupFB();phase='menu';onlineMode=false;localP2=false;vsAI=false;
-  document.getElementById('p2Panel').style.display='none';document.getElementById('p2ks').style.display='none';
-  cdDiv.style.display='none';boats=[];parts=[];postRaceReturn=false;postRaceWinner=null;
-  hideAllOverlays();document.getElementById('menuScreen').style.display='flex';
+  selectedPrizeKind=null;prizeFaceActive=false;courseEditMode=false;cleanupFB();phase='menu';onlineMode=false;localP2=false;vsAI=false;
+  const pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';
+  const p2=document.getElementById('p2Panel');if(p2)p2.style.display='none';
+  const p2ks=document.getElementById('p2ks');if(p2ks)p2ks.style.display='none';
+  if(cdDiv)cdDiv.style.display='none';boats=[];parts=[];postRaceReturn=false;postRaceWinner=null;
+  hideAllOverlays();const menu=document.getElementById('menuScreen');if(menu)menu.style.display='flex';
 }
-function showLocalSetup(){courseEditMode=false;hideAllOverlays();document.getElementById('localScreen').style.display='flex';}
-function showOnlineSetup(){courseEditMode=false;hideAllOverlays();document.getElementById('onlineScreen').style.display='flex';document.getElementById('onlineErr').textContent='';}
-function toggleFS(){let w=document.getElementById('cw');document.fullscreenElement?document.exitFullscreen():w.requestFullscreen&&w.requestFullscreen();}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   INPUT
-   ═══════════════════════════════════════════════════════════════════════════ */
-document.addEventListener('keydown',e=>{
-  keys[e.key]=true;
-  if(e.key==='F9'){e.preventDefault(); if(e.shiftKey)devForceWin(0); else if(e.ctrlKey)devForceWin(1); else devEndRaceCurrentLeader(); return;}
-  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))e.preventDefault();
-  if((e.key==='p'||e.key==='P')){e.preventDefault();applyWindShift(10,'💨 P WIND');}
-  if((e.key==='h'||e.key==='H')&&boats[mySlotIdx]){e.preventDefault();boats[mySlotIdx].hp=[];buildHint(boats[mySlotIdx]);}
-  // Hints are deliberately shown only for the current user's boat.
-  if((e.key==='/'||e.key==='?')&&localP2&&boats[1]){e.preventDefault();}
-});
-document.addEventListener('keyup',e=>{keys[e.key]=false;});
-document.getElementById('c').addEventListener('wheel',e=>{ev(e);let b=boats[mySlotIdx];if(!b)return;b.sa=clamp(b.sa+(e.deltaY>0?-5:5),MSA,90);if(updTMy)updTMy();},{passive:false});
-
-
-
-/* v45 FINAL: prize-screen face behaviour
-   1) When the prize screen first appears: show the boy's happy face, no food.
-   2) Only after a prize button is pressed: add the food and start eating/chewing. */
+function showLocalSetup(){courseEditMode=false;hideAllOverlays();const el=document.getElementById('localScreen');if(el)el.style.display='flex';}
+function showOnlineSetup(){courseEditMode=false;hideAllOverlays();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';}
+function showCourseEditor(){cleanupFB();courseEditMode=true;phase='menu';boats=[];parts=[];if(cdDiv)cdDiv.style.display='none';hideAllOverlays();const el=document.getElementById('editScreen');if(el)el.style.display='flex';}
+function finishCourseEditor(){saveCourseLayout();courseEditMode=false;showMenu();}
+function toggleFS(){let w=document.getElementById('cw');document.fullscreenElement?document.exitFullscreen():(w.requestFullscreen&&w.requestFullscreen());}
 function setPrizeBoyWaiting(){
-  selectedPrizeKind=null;
-  prizeFaceActive=false;
-  const pd=document.getElementById('prizeDisplay');
-  if(pd) pd.innerHTML='';
-  const boy=document.getElementById('prizeBoyFace');
-  if(boy){
-    boy.classList.add('show');
-    boy.removeAttribute('data-prize');
-    boy.setAttribute('aria-hidden','false');
-  }
+  selectedPrizeKind=null;prizeFaceActive=false;const pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';
+  const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.add('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','false');}
 }
-function setPrizeBoyHidden(){
-  const boy=document.getElementById('prizeBoyFace');
-  if(boy){
-    boy.classList.remove('show');
-    boy.removeAttribute('data-prize');
-    boy.setAttribute('aria-hidden','true');
-  }
-}
-function choosePrize(kind){
-  selectedPrizeKind=kind;
-  prizeFaceActive=true;
-  const pd=document.getElementById('prizeDisplay');
-  if(pd) pd.innerHTML=makePrizeHTML(kind)+makeCocoaHTML();
-  const boy=document.getElementById('prizeBoyFace');
-  if(boy){
-    boy.classList.add('show');
-    boy.dataset.prize=kind;
-    boy.setAttribute('aria-hidden','false');
-  }
-}
-function beginPostRaceReturn(winner){
-  postRaceReturn=true;postRaceWinner=winner||null;
-  const parallelA=90, parallelB=270;
-  const moorHead=Math.abs(sDiff(parallelA,wFrom))<Math.abs(sDiff(parallelB,wFrom))?parallelA:parallelB;
-  boats.filter(Boolean).forEach((b,i)=>{
-    b.postRaceHome=PONTOON_HOME[b.slot]||PONTOON_HOME[i%PONTOON_HOME.length];
-    b.postRaceMoorHead=moorHead;
-    b.postRaceMooring=false;
-    b.done=true;b.remote=false;
-  });
-  setPrizeBoyWaiting();
-}
-function devPrizeScreen(){
-  ensureDevBoats();hideAllOverlays();
-  document.getElementById('mt').textContent='🏆 Prize test';
-  document.getElementById('mb').innerHTML='Choose a victory snack — hot chocolate included.';
-  const a=document.getElementById('achievementsDisplay');if(a)a.innerHTML='';
-  document.getElementById('mo').style.display='flex';
-  setPrizeBoyWaiting();
-  beginPostRaceReturn(boats[mySlotIdx]||boats[0]);
-  phase='done';
-}
+function setPrizeBoyHidden(){const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.remove('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','true');}}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BOOT
