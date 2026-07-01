@@ -86,6 +86,28 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 .pizza-award .p1{left:62px;top:34px}.pizza-award .p2{left:42px;top:58px}.pizza-award .p3{left:82px;top:70px}
 .pizza-award .eyes:before,.pizza-award .eyes:after{content:"";position:absolute;width:9px;height:9px;background:#111;border-radius:50%;top:50px;box-shadow:inset 2px 2px 0 #fff;}
 .pizza-award .eyes:before{left:61px}.pizza-award .eyes:after{left:82px}.pizza-award .smile{position:absolute;left:68px;top:64px;width:23px;height:12px;border-bottom:3px solid #111;border-radius:0 0 20px 20px;}
+
+.donut-award{position:relative;width:130px;height:120px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.42));animation:donutBounce .85s ease-in-out infinite alternate;}
+.donut-award .ring{position:absolute;left:12px;top:12px;width:106px;height:106px;background:#d9893b;border:5px solid #7c4215;border-radius:50%;box-shadow:inset 0 -10px 0 rgba(85,35,8,.18);}
+.donut-award .ring:before{content:"";position:absolute;left:17px;top:17px;width:62px;height:62px;background:#3a1708;border:5px solid #7c4215;border-radius:50%;}
+.donut-award .icing{position:absolute;left:18px;top:18px;width:94px;height:94px;background:#ff83b6;border-radius:50%;clip-path:polygon(50% 0%,62% 10%,78% 5%,88% 22%,100% 38%,90% 52%,96% 70%,76% 78%,63% 96%,48% 84%,29% 96%,22% 76%,3% 65%,13% 48%,0% 32%,19% 23%,28% 5%);}
+.donut-award .hole{position:absolute;left:43px;top:43px;width:44px;height:44px;background:#3a1708;border:4px solid #7c4215;border-radius:50%;}
+.donut-award .spr{position:absolute;width:14px;height:4px;border-radius:3px;background:#fff35a;transform:rotate(25deg);}.donut-award .s1{left:32px;top:33px}.donut-award .s2{left:77px;top:35px;background:#6ff}.donut-award .s3{left:83px;top:74px;background:#b7ff5a;transform:rotate(-28deg)}.donut-award .s4{left:30px;top:79px;background:#fff;transform:rotate(-18deg)}
+.donut-award .eyes:before,.donut-award .eyes:after{content:"";position:absolute;width:8px;height:8px;background:#111;border-radius:50%;top:58px;z-index:4;box-shadow:inset 2px 2px 0 #fff;}.donut-award .eyes:before{left:44px}.donut-award .eyes:after{left:76px}.donut-award .smile{position:absolute;left:57px;top:70px;width:19px;height:9px;border-bottom:3px solid #111;border-radius:0 0 18px 18px;z-index:4;}
+.watermelon-award{position:relative;width:150px;height:118px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.42));animation:watermelonBounce .9s ease-in-out infinite alternate;}
+.watermelon-award .rind{position:absolute;left:10px;top:18px;width:130px;height:82px;background:#2eaa45;border:5px solid #0d5d24;border-radius:0 0 90px 90px;overflow:hidden;}
+.watermelon-award .flesh{position:absolute;left:18px;top:16px;width:94px;height:55px;background:#ff4e62;border-radius:0 0 70px 70px;border-bottom:8px solid #a8e86b;}
+.watermelon-award .seed{position:absolute;width:7px;height:11px;background:#19100a;border-radius:50% 50% 60% 60%;}.watermelon-award .w1{left:54px;top:48px}.watermelon-award .w2{left:78px;top:58px}.watermelon-award .w3{left:100px;top:42px}
+.watermelon-award .eyes:before,.watermelon-award .eyes:after{content:"";position:absolute;width:8px;height:8px;background:#111;border-radius:50%;top:54px;z-index:4;box-shadow:inset 2px 2px 0 #fff;}.watermelon-award .eyes:before{left:63px}.watermelon-award .eyes:after{left:87px}.watermelon-award .smile{position:absolute;left:72px;top:66px;width:20px;height:9px;border-bottom:3px solid #111;border-radius:0 0 18px 18px;z-index:4;}
+.icepop-award{position:relative;width:110px;height:126px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.42));animation:icepopBounce .82s ease-in-out infinite alternate;}
+.icepop-award .stick{position:absolute;left:48px;top:86px;width:16px;height:36px;background:#d69b55;border:3px solid #8b5724;border-radius:0 0 10px 10px;}
+.icepop-award .pop{position:absolute;left:17px;top:6px;width:76px;height:88px;background:linear-gradient(180deg,#77e3ff 0 33%,#ffe66a 33% 66%,#ff6aa2 66% 100%);border:5px solid #2b5c78;border-radius:38px 38px 18px 18px;box-shadow:inset 0 8px 0 rgba(255,255,255,.25);}
+.icepop-award .shine{position:absolute;left:32px;top:19px;width:13px;height:33px;background:rgba(255,255,255,.45);border-radius:10px;}
+.icepop-award .eyes:before,.icepop-award .eyes:after{content:"";position:absolute;width:8px;height:8px;background:#111;border-radius:50%;top:51px;z-index:4;box-shadow:inset 2px 2px 0 #fff;}.icepop-award .eyes:before{left:44px}.icepop-award .eyes:after{left:62px}.icepop-award .smile{position:absolute;left:50px;top:63px;width:17px;height:8px;border-bottom:3px solid #111;border-radius:0 0 18px 18px;z-index:4;}
+@keyframes donutBounce{from{transform:translateY(0) rotate(2deg)}to{transform:translateY(-7px) rotate(-3deg)}}
+@keyframes watermelonBounce{from{transform:translateY(0) rotate(-2deg)}to{transform:translateY(-7px) rotate(2deg)}}
+@keyframes icepopBounce{from{transform:translateY(0) rotate(2deg)}to{transform:translateY(-8px) rotate(-2deg)}}
+
 .cocoa-award{position:relative;width:92px;height:96px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.38));}
 .cocoa-award .steam{position:absolute;top:0;width:16px;height:36px;border-left:3px solid rgba(255,255,255,.8);border-radius:50%;animation:steamRise 1.3s ease-in-out infinite alternate;}
 .cocoa-award .s1{left:28px}.cocoa-award .s2{left:46px;animation-delay:.25s}.cocoa-award .s3{left:64px;animation-delay:.45s}
@@ -229,7 +251,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 
     <!-- WIN OVERLAY -->
     <div id="mo"><h3 id="mt">🏆</h3>
-      <div class="prize-choice" id="prizeChoice"><button onclick="choosePrize('hotdog')">🌭 Hot dog</button><button onclick="choosePrize('pizza')">🍕 Pizza</button></div>
+      <div class="prize-choice" id="prizeChoice"><button onclick="choosePrize('hotdog')">🌭 Hot dog</button><button onclick="choosePrize('pizza')">🍕 Pizza</button><button onclick="choosePrize('donut')">🍩 Doughnut</button><button onclick="choosePrize('watermelon')">🍉 Watermelon</button><button onclick="choosePrize('icepop')">🍧 Ice pop</button></div>
       <div id="prizeDisplay" class="prize-row"></div>
       <div id="achievementsDisplay" class="achievements-row"></div>
       <p id="mb"></p><button class="btn btn-g btn-sm" onclick="showMenu()">Play again</button></div>
@@ -809,11 +831,21 @@ function resetRound(b){b.roundSt={};}
 
 function makeHotdogHTML(){return '<div class="hotdog-award" aria-label="Winner hot dog prize"><span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span><div class="bun"></div><div class="sausage"></div><div class="ketchup"></div><div class="mustard"></div><div class="eyes"></div><div class="smile"></div></div>';}
 function makePizzaHTML(){return '<div class="pizza-award" aria-label="Winner pizza prize"><div class="slice"></div><div class="pep p1"></div><div class="pep p2"></div><div class="pep p3"></div><div class="eyes"></div><div class="smile"></div></div>';}
+function makeDonutHTML(){return '<div class="donut-award" aria-label="Winner doughnut prize"><div class="ring"></div><div class="icing"></div><div class="hole"></div><div class="spr s1"></div><div class="spr s2"></div><div class="spr s3"></div><div class="spr s4"></div><div class="eyes"></div><div class="smile"></div></div>';}
+function makeWatermelonHTML(){return '<div class="watermelon-award" aria-label="Winner watermelon prize"><div class="rind"><div class="flesh"></div></div><div class="seed w1"></div><div class="seed w2"></div><div class="seed w3"></div><div class="eyes"></div><div class="smile"></div></div>';}
+function makeIcepopHTML(){return '<div class="icepop-award" aria-label="Winner ice pop prize"><div class="stick"></div><div class="pop"></div><div class="shine"></div><div class="eyes"></div><div class="smile"></div></div>';}
 function makeCocoaHTML(){return '<div class="cocoa-award" aria-label="Hot chocolate prize"><div class="steam s1"></div><div class="steam s2"></div><div class="steam s3"></div><div class="mug"></div><div class="face"></div><div class="smile"></div></div>';}
+function makePrizeHTML(kind){
+  if(kind==='pizza')return makePizzaHTML();
+  if(kind==='donut')return makeDonutHTML();
+  if(kind==='watermelon')return makeWatermelonHTML();
+  if(kind==='icepop')return makeIcepopHTML();
+  return makeHotdogHTML();
+}
 function choosePrize(kind){
   const pd=document.getElementById('prizeDisplay');
   if(!pd)return;
-  pd.innerHTML=(kind==='pizza'?makePizzaHTML():makeHotdogHTML())+makeCocoaHTML();
+  pd.innerHTML=makePrizeHTML(kind)+makeCocoaHTML();
 }
 
 function relBoomParallelToWind(b, extra=0){
@@ -1798,11 +1830,21 @@ function showOnlineErr(msg){document.getElementById('onlineErr').textContent=msg
 
 function makeHotdogHTML(){return '<div class="hotdog-award" aria-label="Winner hot dog prize"><span class="spark s1">✦</span><span class="spark s2">✦</span><span class="spark s3">✦</span><div class="bun"></div><div class="sausage"></div><div class="ketchup"></div><div class="mustard"></div><div class="eyes"></div><div class="smile"></div></div>';}
 function makePizzaHTML(){return '<div class="pizza-award" aria-label="Winner pizza prize"><div class="slice"></div><div class="pep p1"></div><div class="pep p2"></div><div class="pep p3"></div><div class="eyes"></div><div class="smile"></div></div>';}
+function makeDonutHTML(){return '<div class="donut-award" aria-label="Winner doughnut prize"><div class="ring"></div><div class="icing"></div><div class="hole"></div><div class="spr s1"></div><div class="spr s2"></div><div class="spr s3"></div><div class="spr s4"></div><div class="eyes"></div><div class="smile"></div></div>';}
+function makeWatermelonHTML(){return '<div class="watermelon-award" aria-label="Winner watermelon prize"><div class="rind"><div class="flesh"></div></div><div class="seed w1"></div><div class="seed w2"></div><div class="seed w3"></div><div class="eyes"></div><div class="smile"></div></div>';}
+function makeIcepopHTML(){return '<div class="icepop-award" aria-label="Winner ice pop prize"><div class="stick"></div><div class="pop"></div><div class="shine"></div><div class="eyes"></div><div class="smile"></div></div>';}
 function makeCocoaHTML(){return '<div class="cocoa-award" aria-label="Hot chocolate prize"><div class="steam s1"></div><div class="steam s2"></div><div class="steam s3"></div><div class="mug"></div><div class="face"></div><div class="smile"></div></div>';}
+function makePrizeHTML(kind){
+  if(kind==='pizza')return makePizzaHTML();
+  if(kind==='donut')return makeDonutHTML();
+  if(kind==='watermelon')return makeWatermelonHTML();
+  if(kind==='icepop')return makeIcepopHTML();
+  return makeHotdogHTML();
+}
 function choosePrize(kind){
   const pd=document.getElementById('prizeDisplay');
   if(!pd)return;
-  pd.innerHTML=(kind==='pizza'?makePizzaHTML():makeHotdogHTML())+makeCocoaHTML();
+  pd.innerHTML=makePrizeHTML(kind)+makeCocoaHTML();
 }
 
 function relBoomParallelToWind(b, extra=0){
