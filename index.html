@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — Course Improved</title>
+<title>Piddinghoe Lake Sailing — Happier Prize Face v35</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -127,9 +127,160 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 
 @keyframes sparkTwinkle{from{transform:scale(.85);opacity:.65}to{transform:scale(1.15);opacity:1}}
 
+/* v42 DOM prize face: only shown on prize screen after choosing a prize */
+#prizeBoyFace{
+  display:none;
+  position:absolute;
+  left:18%;
+  top:50%;
+  width:190px;
+  height:190px;
+  transform:translate(-50%,-50%);
+  z-index:2;
+  pointer-events:none;
+  filter:drop-shadow(0 8px 10px rgba(0,0,0,.35));
+}
+#prizeBoyFace.show{display:block;animation:prizeBoyBob .85s ease-in-out infinite alternate;}
+#prizeBoyFace .glow{position:absolute;left:4px;top:8px;width:178px;height:178px;background:rgba(255,242,130,.20);border-radius:50%;z-index:0;}
+#prizeBoyFace .ear{position:absolute;top:70px;width:31px;height:36px;background:#ffb16f;border:4px solid #ad5a35;border-radius:50%;z-index:1;}
+#prizeBoyFace .ear.left{left:13px;} #prizeBoyFace .ear.right{right:13px;}
+#prizeBoyFace .ear:after{content:"";position:absolute;left:8px;top:9px;width:10px;height:13px;border:3px solid rgba(145,65,45,.45);border-right:none;border-radius:50%;}
+#prizeBoyFace .head{position:absolute;left:37px;top:43px;width:116px;height:116px;background:#ffc27e;border:5px solid #ad5a35;border-radius:50%;z-index:2;overflow:hidden;}
+#prizeBoyFace .hair-back{position:absolute;left:39px;top:25px;width:113px;height:62px;background:#8f3f2c;border:4px solid #6d2a20;border-radius:72px 72px 24px 38px;z-index:4;transform:rotate(-3deg);}
+#prizeBoyFace .fringe{position:absolute;left:45px;top:29px;width:97px;height:45px;background:#9d4a2d;border-bottom:4px solid #6d2a20;border-radius:80% 20% 75% 20%;z-index:5;transform:rotate(-8deg);}
+#prizeBoyFace .fringe:after{content:"";position:absolute;left:14px;top:10px;width:62px;height:7px;border-top:4px solid rgba(255,177,88,.45);border-radius:50%;}
+#prizeBoyFace .tuft{position:absolute;right:42px;top:15px;width:38px;height:38px;border-top:6px solid #8f3f2c;border-right:6px solid #8f3f2c;border-radius:60% 40% 20% 20%;z-index:6;transform:rotate(25deg);}
+#prizeBoyFace .brow{position:absolute;top:74px;width:23px;height:12px;border-top:5px solid #76231f;border-radius:50%;z-index:7;}
+#prizeBoyFace .brow.left{left:65px;} #prizeBoyFace .brow.right{right:65px;}
+#prizeBoyFace .eye{position:absolute;top:86px;width:27px;height:32px;background:#fff;border:4px solid #6b241f;border-radius:50%;z-index:7;animation:prizeBoyBlink 4.8s infinite;}
+#prizeBoyFace .eye.left{left:62px;} #prizeBoyFace .eye.right{right:62px;}
+#prizeBoyFace .eye:before{content:"";position:absolute;left:5px;top:6px;width:14px;height:14px;background:#18a9dc;border:3px solid #003e68;border-radius:50%;}
+#prizeBoyFace .eye:after{content:"";position:absolute;left:8px;top:7px;width:6px;height:6px;background:#fff;border-radius:50%;}
+#prizeBoyFace .cheek{position:absolute;top:119px;width:24px;height:18px;background:rgba(255,111,120,.52);border-radius:50%;z-index:7;}
+#prizeBoyFace .cheek.left{left:51px;} #prizeBoyFace .cheek.right{right:51px;}
+#prizeBoyFace .nose{position:absolute;left:86px;top:111px;width:17px;height:11px;background:#ff9d78;border:3px solid rgba(160,70,45,.6);border-radius:50%;z-index:9;}
+#prizeBoyFace .mouth{position:absolute;left:59px;top:125px;width:72px;height:38px;background:#681617;border:4px solid #5d1718;border-radius:8px 8px 42px 42px;z-index:8;overflow:hidden;animation:prizeBoyChew .42s ease-in-out infinite alternate;}
+#prizeBoyFace .mouth:before{content:"";position:absolute;left:8px;top:2px;width:56px;height:13px;background:#fff8e8;border-radius:0 0 50% 50%;}
+#prizeBoyFace .mouth:after{content:"";position:absolute;left:21px;bottom:-3px;width:32px;height:16px;background:#ff7fa0;border-radius:50% 50% 0 0;}
+#prizeBoyFace .prize-bite{position:absolute;left:116px;top:105px;width:74px;height:74px;z-index:20;animation:prizeNibble .42s ease-in-out infinite alternate;}
+#prizeBoyFace .prize-bite:before{content:"🍕";font-size:70px;line-height:74px;}
+#prizeBoyFace[data-prize="hotdog"] .prize-bite{left:101px;top:111px;width:96px;}
+#prizeBoyFace[data-prize="hotdog"] .prize-bite:before{content:"🌭";font-size:78px;}
+#prizeBoyFace[data-prize="pizza"] .prize-bite:before{content:"🍕";font-size:76px;}
+#prizeBoyFace[data-prize="donut"] .prize-bite:before{content:"🍩";font-size:74px;}
+#prizeBoyFace[data-prize="watermelon"] .prize-bite:before{content:"🍉";font-size:78px;}
+#prizeBoyFace[data-prize="icepop"] .prize-bite:before{content:"🍧";font-size:74px;}
+#prizeBoyFace .heart{position:absolute;color:#ff4860;font-size:30px;z-index:0;animation:heartPop .9s ease-in-out infinite alternate;}
+#prizeBoyFace .h1{left:2px;top:36px;} #prizeBoyFace .h2{right:0;top:42px;animation-delay:.25s;} #prizeBoyFace .h3{left:3px;bottom:28px;animation-delay:.45s;}
+#prizeBoyFace .crumb{position:absolute;left:127px;top:136px;width:7px;height:7px;background:#ffe58a;border-radius:50%;z-index:21;animation:crumbFly .75s ease-in-out infinite;}
+#prizeBoyFace .c2{animation-delay:.18s;left:143px;top:144px;} #prizeBoyFace .c3{animation-delay:.36s;left:153px;top:128px;}
+@keyframes prizeBoyBob{from{transform:translate(-50%,-50%) translateY(0) scale(1)}to{transform:translate(-50%,-50%) translateY(-8px) scale(1)}}
+@keyframes prizeBoyChew{from{transform:scaleY(.82)}to{transform:scaleY(1.18)}}
+@keyframes prizeNibble{from{transform:translate(-2px,0) rotate(-3deg) scale(.96)}to{transform:translate(-13px,3px) rotate(3deg) scale(1.07)}}
+@keyframes prizeBoyBlink{0%,92%,100%{transform:scaleY(1)}94%,96%{transform:scaleY(.08)}}
+@keyframes heartPop{from{transform:scale(.85);opacity:.7}to{transform:scale(1.2);opacity:1}}
+@keyframes crumbFly{0%{transform:translate(0,0);opacity:1}100%{transform:translate(18px,-20px);opacity:0}}
+
 #ks{background:#1e4010;padding:2px 8px;display:flex;gap:8px;justify-content:center;flex-shrink:0;flex-wrap:wrap;border-top:1px solid #1a3a10;}
 .kg{display:flex;gap:2px;align-items:center;font-size:8px;color:#4a7a30;}
 .k{background:#1a3a10;border:1px solid #3a6a20;border-radius:2px;padding:0 3px;font-family:monospace;font-size:8px;color:#7ab870;}
+
+
+/* v43: prize face waits happily with no food, then eats only after choice */
+#prizeBoyFace{left:13.5% !important;top:50% !important;width:180px !important;height:180px !important;}
+#prizeBoyFace.show{display:block !important;}
+#prizeBoyFace .glow{left:2px !important;top:4px !important;width:176px !important;height:176px !important;}
+#prizeBoyFace .mouth{
+  left:61px !important; top:132px !important; width:58px !important; height:18px !important;
+  background:transparent !important; border:0 !important; border-bottom:7px solid #5d1718 !important;
+  border-radius:0 0 56px 56px !important; overflow:visible !important; animation:none !important;
+}
+#prizeBoyFace .mouth:before,#prizeBoyFace .mouth:after{display:none !important;}
+#prizeBoyFace .prize-bite,#prizeBoyFace .crumb{display:none !important;}
+#prizeBoyFace[data-prize] .mouth{
+  left:63px !important; top:127px !important; width:54px !important; height:29px !important;
+  background:#681617 !important; border:4px solid #5d1718 !important;
+  border-radius:8px 8px 34px 34px !important; overflow:hidden !important;
+  animation:prizeBoyChewSmall .44s ease-in-out infinite alternate !important;
+}
+#prizeBoyFace[data-prize] .mouth:before{display:block !important;content:"";position:absolute;left:7px;top:1px;width:40px;height:9px;background:#fff8e8;border-radius:0 0 50% 50%;}
+#prizeBoyFace[data-prize] .mouth:after{display:block !important;content:"";position:absolute;left:16px;bottom:-3px;width:24px;height:12px;background:#ff7fa0;border-radius:50% 50% 0 0;}
+#prizeBoyFace[data-prize] .prize-bite{display:block !important;left:108px !important;top:105px !important;z-index:30 !important;}
+#prizeBoyFace[data-prize="hotdog"] .prize-bite{left:92px !important;top:111px !important;width:90px !important;}
+#prizeBoyFace[data-prize="watermelon"] .prize-bite{left:103px !important;top:104px !important;}
+#prizeBoyFace[data-prize="icepop"] .prize-bite{left:111px !important;top:104px !important;}
+#prizeBoyFace[data-prize] .crumb{display:block !important;}
+@keyframes prizeBoyChewSmall{from{transform:scaleY(.9)}to{transform:scaleY(1.08)}}
+
+
+
+/* v44 prize-face fix: visible on prize screen while waiting, then eats after a prize is chosen */
+#prizeBoyFace{
+  left:11.5% !important;
+  top:50% !important;
+  width:176px !important;
+  height:176px !important;
+  z-index:45 !important;
+  pointer-events:none !important;
+}
+#mo #prizeBoyFace.show{display:block !important;}
+#prizeBoyFace:not([data-prize]) .prize-bite,
+#prizeBoyFace:not([data-prize]) .crumb{display:none !important;}
+#prizeBoyFace:not([data-prize]) .mouth{
+  left:65px !important;
+  top:130px !important;
+  width:48px !important;
+  height:20px !important;
+  background:#5f1416 !important;
+  border:4px solid #5d1718 !important;
+  border-radius:0 0 34px 34px !important;
+  animation:none !important;
+}
+#prizeBoyFace:not([data-prize]) .mouth:before{
+  display:block !important;
+  content:"" !important;
+  position:absolute !important;
+  left:6px !important;
+  top:1px !important;
+  width:36px !important;
+  height:8px !important;
+  background:#fff8e8 !important;
+  border-radius:0 0 50% 50% !important;
+}
+#prizeBoyFace:not([data-prize]) .mouth:after{
+  display:block !important;
+  content:"" !important;
+  position:absolute !important;
+  left:16px !important;
+  bottom:-4px !important;
+  width:20px !important;
+  height:10px !important;
+  background:#ff7fa0 !important;
+  border-radius:50% 50% 0 0 !important;
+}
+#prizeBoyFace[data-prize] .mouth{
+  left:63px !important;
+  top:128px !important;
+  width:54px !important;
+  height:26px !important;
+}
+
+
+
+/* v45 visual polish: waiting face first, eating face only after data-prize is set */
+#prizeBoyFace{left:11.5% !important;top:50% !important;width:176px !important;height:176px !important;z-index:45 !important;}
+#mo #prizeBoyFace.show{display:block !important;}
+#prizeBoyFace:not([data-prize]) .prize-bite,
+#prizeBoyFace:not([data-prize]) .crumb{display:none !important;}
+#prizeBoyFace:not([data-prize]) .mouth{
+  left:61px !important;top:129px !important;width:55px !important;height:19px !important;
+  background:#5f1416 !important;border:4px solid #5d1718 !important;border-radius:0 0 36px 36px !important;
+  overflow:hidden !important;animation:none !important;
+}
+#prizeBoyFace:not([data-prize]) .mouth:before{display:block !important;content:"" !important;position:absolute !important;left:7px !important;top:1px !important;width:41px !important;height:8px !important;background:#fff8e8 !important;border-radius:0 0 50% 50% !important;}
+#prizeBoyFace:not([data-prize]) .mouth:after{display:block !important;content:"" !important;position:absolute !important;left:18px !important;bottom:-4px !important;width:21px !important;height:10px !important;background:#ff7fa0 !important;border-radius:50% 50% 0 0 !important;}
+#prizeBoyFace[data-prize] .mouth{left:63px !important;top:128px !important;width:52px !important;height:25px !important;}
+
 </style>
 </head>
 <body>
@@ -250,7 +401,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     </div>
 
     <!-- WIN OVERLAY -->
-    <div id="mo"><h3 id="mt">🏆</h3>
+    <div id="mo"><div id="prizeBoyFace" aria-hidden="true"><div class="glow"></div><div class="heart h1">♥</div><div class="heart h2">♥</div><div class="heart h3">♥</div><div class="ear left"></div><div class="ear right"></div><div class="head"></div><div class="hair-back"></div><div class="fringe"></div><div class="tuft"></div><div class="brow left"></div><div class="brow right"></div><div class="eye left"></div><div class="eye right"></div><div class="cheek left"></div><div class="cheek right"></div><div class="nose"></div><div class="mouth"></div><div class="prize-bite"></div><div class="crumb c1"></div><div class="crumb c2"></div><div class="crumb c3"></div></div><h3 id="mt">🏆</h3>
       <div class="prize-choice" id="prizeChoice"><button onclick="choosePrize('hotdog')">🌭 Hot dog</button><button onclick="choosePrize('pizza')">🍕 Pizza</button><button onclick="choosePrize('donut')">🍩 Doughnut</button><button onclick="choosePrize('watermelon')">🍉 Watermelon</button><button onclick="choosePrize('icepop')">🍧 Ice pop</button></div>
       <div id="prizeDisplay" class="prize-row"></div>
       <div id="achievementsDisplay" class="achievements-row"></div>
@@ -678,6 +829,8 @@ function playPostRaceChatterSequence(){
 /* ═══════════════════════════════════════════════════════════════════════════
    GAME STATE
    ═══════════════════════════════════════════════════════════════════════════ */
+let selectedPrizeKind=null; // set only after winner chooses a prize
+let prizeFaceActive=false;    // v39: face appears only on the prize screen, never during sailing
 let mode='menu'; // menu | local | online
 let vsAI=false,localP2=false;
 let aiSkill='intermediate';
@@ -845,7 +998,11 @@ function makePrizeHTML(kind){
 function choosePrize(kind){
   const pd=document.getElementById('prizeDisplay');
   if(!pd)return;
+  selectedPrizeKind=kind;
+  prizeFaceActive=true;
   pd.innerHTML=makePrizeHTML(kind)+makeCocoaHTML();
+  const boy=document.getElementById('prizeBoyFace');
+  if(boy){boy.dataset.prize=kind;boy.classList.add('show');boy.setAttribute('aria-hidden','false');}
 }
 
 function relBoomParallelToWind(b, extra=0){
@@ -870,7 +1027,11 @@ function beginPostRaceReturn(winner){
     b.postRaceMooring=false;
     b.done=true;b.remote=false;
   });
-  choosePrize('hotdog');
+  // Prize screen: show the cheerful boy waiting with NO food first.
+  // The food/eating animation starts only after choosePrize(kind) is pressed.
+  selectedPrizeKind=null;prizeFaceActive=false;
+  {const pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';}
+  {const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.add('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','false');}}
 }
 function updatePostRaceReturn(dt){
   if(!postRaceReturn)return;
@@ -991,6 +1152,12 @@ function finishRace(winner, reason){
   const awards=document.getElementById('achievementsDisplay');if(awards)awards.innerHTML=Number.isFinite(totNum)?computeAwardsHTML(winner,totNum):'';
   document.getElementById('mb').innerHTML='Total: '+tot+'s<br>'+winner.lapTs.map((t,i)=>'Lap '+(i+1)+': '+t+'s').join('<br>')+'<br>'+(reason||'Developer finish')+'<br>Choose a victory snack — hot chocolate included.';
   document.getElementById('mo').style.display='flex';
+  {
+    selectedPrizeKind=null; prizeFaceActive=false;
+    const pd=document.getElementById('prizeDisplay'); if(pd)pd.innerHTML='';
+    const boy=document.getElementById('prizeBoyFace');
+    if(boy){boy.classList.add('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','false');}
+  }
   beginPostRaceReturn(winner);
   playPostRaceChatterSequence();
   phase='done';
@@ -1009,7 +1176,7 @@ function devEndRaceCurrentLeader(){ensureDevBoats();let live=boats.filter(Boolea
 function devShiftWind(){let mag=45+Math.floor(Math.random()*46);let delta=(Math.random()<0.5?-mag:mag);applyWindShift(delta,delta>0?'💨 DEV WIND VEER':'💨 DEV WIND BACK');}
 function devAdvanceMyBoat(){ensureDevBoats();let b=boats[mySlotIdx]||boats[0];if(!b.started){b.started=true;b.t0=Date.now();b.lap=1;b.leg=1;}else advCourse(b);}
 function devSendPontoon(){ensureDevBoats();hideAllOverlays();phase='done';beginPostRaceReturn(boats[mySlotIdx]||boats[0]);}
-function devPrizeScreen(){ensureDevBoats();hideAllOverlays();document.getElementById('mt').textContent='🏆 Prize test';document.getElementById('mb').innerHTML='Choose a victory snack — hot chocolate included.';{let a=document.getElementById('achievementsDisplay');if(a)a.innerHTML='';}document.getElementById('mo').style.display='flex';beginPostRaceReturn(boats[mySlotIdx]||boats[0]);phase='done';}
+function devPrizeScreen(){ensureDevBoats();hideAllOverlays();document.getElementById('mt').textContent='🏆 Prize test';document.getElementById('mb').innerHTML='Choose a victory snack — hot chocolate included.';{let a=document.getElementById('achievementsDisplay');if(a)a.innerHTML='';}{let pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';}document.getElementById('mo').style.display='flex';{selectedPrizeKind=null;prizeFaceActive=false;let boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.add('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','false');}}beginPostRaceReturn(boats[mySlotIdx]||boats[0]);phase='done';}
 function toggleDevPanel(){let el=document.getElementById('devScreen');if(!el)return;el.style.display=(el.style.display==='flex')?'none':'flex';}
 
 function advCourse(b){
@@ -1524,6 +1691,147 @@ function drawCourseDebugOverlay(){
   }
   ctx.restore();
 }
+
+function drawTinyPrize(kind,x,y,s=1){
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.lineWidth=2;ctx.lineJoin='round';ctx.lineCap='round';
+  if(kind==='pizza'){
+    ctx.fillStyle='#ffd15b';ctx.strokeStyle='#7a3e15';ctx.beginPath();ctx.moveTo(-12,-8);ctx.lineTo(14,-1);ctx.lineTo(-8,14);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#c92d2d';[-3,6,0].forEach((px,i)=>{ctx.beginPath();ctx.arc(px,i?3:0,2.4,0,Math.PI*2);ctx.fill();});
+  } else if(kind==='donut'){
+    ctx.fillStyle='#d9893b';ctx.strokeStyle='#7c4215';ctx.beginPath();ctx.arc(0,0,13,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#ff83b6';ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#3a1708';ctx.beginPath();ctx.arc(0,0,5,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#fff35a';ctx.beginPath();ctx.moveTo(-6,-7);ctx.lineTo(-1,-5);ctx.moveTo(5,7);ctx.lineTo(10,5);ctx.stroke();
+  } else if(kind==='watermelon'){
+    ctx.fillStyle='#2eaa45';ctx.strokeStyle='#0d5d24';ctx.beginPath();ctx.arc(0,0,15,0,Math.PI);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#ff4e62';ctx.beginPath();ctx.arc(0,0,10,0,Math.PI);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#111';[-5,1,7].forEach(px=>{ctx.beginPath();ctx.ellipse(px,5,1.4,2.4,0,0,Math.PI*2);ctx.fill();});
+  } else if(kind==='icepop'){
+    ctx.fillStyle='#d69b55';ctx.strokeStyle='#8b5724';ctx.fillRect(-2,8,4,12);ctx.strokeRect(-2,8,4,12);
+    ctx.fillStyle='#77e3ff';ctx.strokeStyle='#2b5c78';ctx.beginPath();ctx.roundRect(-9,-15,18,25,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#ffe66a';ctx.fillRect(-7,-5,14,7);ctx.fillStyle='#ff6aa2';ctx.fillRect(-7,2,14,7);
+  } else {
+    ctx.fillStyle='#f0b45a';ctx.strokeStyle='#8a4a18';ctx.beginPath();ctx.roundRect(-18,-8,36,16,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#c45225';ctx.beginPath();ctx.roundRect(-15,-5,30,10,5);ctx.fill();
+    ctx.strokeStyle='#d71920';ctx.beginPath();ctx.moveTo(-10,-1);ctx.bezierCurveTo(-5,-5,0,3,5,-1);ctx.bezierCurveTo(8,-4,11,1,14,-2);ctx.stroke();
+    ctx.strokeStyle='#ffd21f';ctx.beginPath();ctx.moveTo(-12,3);ctx.bezierCurveTo(-6,0,-2,7,4,3);ctx.bezierCurveTo(8,0,10,5,14,3);ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawPrizeEatingFace(){
+  return; // v42: DOM face is used instead; canvas face disabled to avoid stray lines/ears.
+  const mo=document.getElementById('mo');
+  const prizeOverlayVisible=mo&&mo.style.display!=='none';
+  if(phase!=='done'||!prizeOverlayVisible||!prizeFaceActive||!selectedPrizeKind)return;
+  // Simple cheerful cartoon-boy face, inspired by the user's reference image.
+  // It bobs above the windsock and munches a bigger version of the chosen prize.
+  // v39: centre of face is around the vertical centre of the canvas, still on the left.
+  const cx=150, cy=H/2;
+  const faceScale=1.18;
+  const bob=Math.sin(now*3.0)*4;
+  const chew=Math.sin(now*8.2);
+  const open=chew>-0.2;
+  const biteT=(chew+1)/2;
+  const blink=(Math.sin(now*1.65)>0.972);
+  ctx.save();
+  ctx.translate(cx,cy+bob);
+  ctx.scale(faceScale,faceScale);
+
+  // warm friendly glow
+  ctx.globalAlpha=.22;
+  ctx.fillStyle='#fff0a8';
+  ctx.beginPath();ctx.arc(0,2,58,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+
+  // ears
+  ctx.fillStyle='#ffb16f';ctx.strokeStyle='#b85d35';ctx.lineWidth=3;
+  ctx.beginPath();ctx.ellipse(-39,0,9,13,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.ellipse(39,0,9,13,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='rgba(160,70,45,.55)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(-39,1,4,-1.0,1.15);ctx.stroke();
+  ctx.beginPath();ctx.arc(39,1,4,2.0,4.15);ctx.stroke();
+
+  // head
+  ctx.fillStyle='#ffc27e';ctx.strokeStyle='#b85d35';ctx.lineWidth=3.5;
+  ctx.beginPath();ctx.ellipse(0,4,38,42,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  // side hair and swoopy fringe
+  ctx.fillStyle='#93402c';ctx.strokeStyle='#6d2a20';ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(-35,-18);ctx.bezierCurveTo(-36,-39,-13,-50,13,-43);ctx.bezierCurveTo(31,-38,39,-26,35,-12);
+  ctx.bezierCurveTo(18,-22,3,-19,-13,-17);ctx.bezierCurveTo(-22,-15,-30,-16,-35,-18);ctx.fill();ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-31,-26);ctx.bezierCurveTo(-13,-47,18,-45,32,-30);ctx.bezierCurveTo(17,-31,2,-27,-16,-23);ctx.bezierCurveTo(-24,-21,-29,-23,-31,-26);ctx.fill();ctx.stroke();
+  // little hair flick
+  ctx.beginPath();ctx.moveTo(24,-38);ctx.bezierCurveTo(42,-48,36,-28,29,-22);ctx.bezierCurveTo(38,-27,42,-16,31,-11);ctx.stroke();
+  ctx.strokeStyle='rgba(255,180,105,.45)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(-14,-35);ctx.bezierCurveTo(2,-41,15,-40,27,-32);ctx.stroke();
+
+  // cheeks
+  ctx.fillStyle='rgba(255,118,120,.55)';
+  ctx.beginPath();ctx.ellipse(-23,13,9,7,0,0,Math.PI*2);ctx.ellipse(23,13,9,7,0,0,Math.PI*2);ctx.fill();
+
+  // eyebrows, soft happy arches
+  ctx.strokeStyle='#7a231f';ctx.lineWidth=3.2;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(-15,-14,9,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+  ctx.beginPath();ctx.arc(15,-14,9,Math.PI*1.12,Math.PI*1.88);ctx.stroke();
+
+  // big blue eyes like the reference image
+  if(blink){
+    ctx.strokeStyle='#63201e';ctx.lineWidth=3;ctx.beginPath();
+    ctx.arc(-14,-2,8,.15,Math.PI-.15);ctx.arc(14,-2,8,.15,Math.PI-.15);ctx.stroke();
+  }else{
+    [-14,14].forEach(ex=>{
+      ctx.fillStyle='#fff';ctx.strokeStyle='#63201e';ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(ex,-2,8,10,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#1aa4d8';ctx.beginPath();ctx.arc(ex,-1,5.3,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#003d62';ctx.beginPath();ctx.arc(ex,-1,2.8,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ex-2.4,-4.2,2,0,Math.PI*2);ctx.arc(ex+2,-.5,.9,0,Math.PI*2);ctx.fill();
+    });
+  }
+
+  // tiny nose
+  ctx.strokeStyle='rgba(180,80,55,.75)';ctx.lineWidth=2;ctx.fillStyle='#ff9d78';
+  ctx.beginPath();ctx.ellipse(0,8,4.5,3,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  // big friendly laughing mouth with white teeth and tongue
+  ctx.lineWidth=2.5;ctx.strokeStyle='#5d1718';
+  if(open){
+    ctx.fillStyle='#671617';
+    ctx.beginPath();ctx.moveTo(-27,17);ctx.bezierCurveTo(-21,43,21,43,27,17);ctx.bezierCurveTo(15,27,-15,27,-27,17);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#fff8e8';ctx.beginPath();ctx.moveTo(-21,20);ctx.quadraticCurveTo(0,28,21,20);ctx.lineTo(17,26);ctx.quadraticCurveTo(0,31,-17,26);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#ff7fa0';ctx.beginPath();ctx.ellipse(0,34,12,6,0,Math.PI,Math.PI*2);ctx.fill();
+  }else{
+    ctx.strokeStyle='#5d1718';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,12,22,.13,Math.PI-.13);ctx.stroke();
+  }
+
+  // larger prize slides into the smile for the eating animation
+  const prizeX=38-biteT*18;
+  const prizeY=19+Math.cos(now*5.5)*2;
+  drawTinyPrize(selectedPrizeKind,prizeX,prizeY,1.85);
+
+  // simple little hands holding the big prize
+  ctx.strokeStyle='#b85d35';ctx.lineWidth=4;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(-35,21);ctx.quadraticCurveTo(-49,14,-48,0);ctx.moveTo(35,21);ctx.quadraticCurveTo(50,14,48,0);ctx.stroke();
+  ctx.fillStyle='#ffc27e';ctx.strokeStyle='#b85d35';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(-47,0,5,0,Math.PI*2);ctx.arc(47,0,5,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  // crumbs and happy sparkle marks
+  ctx.fillStyle='#ffe58a';ctx.strokeStyle='#ffd24a';ctx.lineWidth=2;
+  for(let i=0;i<9;i++){
+    let a=now*2.3+i*1.1;
+    ctx.beginPath();ctx.arc(21+Math.cos(a)*24,31+Math.sin(a*1.4)*8,1.5,0,Math.PI*2);ctx.fill();
+  }
+  // extra child-friendly happy hearts
+  ctx.fillStyle='rgba(255,72,95,.9)';
+  [[-54,-28],[54,-24],[-50,38]].forEach((h,i)=>{
+    const pulse=1+Math.sin(now*3+i)*.08;
+    ctx.save();ctx.translate(h[0],h[1]);ctx.scale(pulse,pulse);
+    ctx.beginPath();ctx.moveTo(0,5);ctx.bezierCurveTo(-12,-4,-6,-15,0,-7);ctx.bezierCurveTo(6,-15,12,-4,0,5);ctx.fill();ctx.restore();
+  });
+  ctx.restore();
+}
+
 let lastT=0;
 function render(t){
   let dt=Math.min((t-lastT)/1000,.05);lastT=t;update(dt);
@@ -1533,7 +1841,7 @@ function render(t){
   drawParts();drawPontoon();drawBuoys();drawCourseDebugOverlay();drawEditableBuoys();
   // Draw boats sorted by speed (slower boats rendered first = behind faster)
   [...boats].filter(Boolean).sort((a,b2)=>a.spd-b2.spd).forEach(b=>drawBoat(b));
-  drawCompass();drawSock();
+  drawCompass();drawSock();drawPrizeEatingFace();
   boats.filter(Boolean).forEach((b,i)=>drawProg(b,170+i*110));
   requestAnimationFrame(render);
 }
@@ -1640,6 +1948,8 @@ function setupTrack(tid,thid,who){
    GAME START HELPERS
    ═══════════════════════════════════════════════════════════════════════════ */
 function initGameCommon(mySlot){
+  selectedPrizeKind=null;prizeFaceActive=false;
+  const pdCommon=document.getElementById('prizeDisplay');if(pdCommon)pdCommon.innerHTML='';
   loadCourseLayout();recalcCourseGeometry();
   mySlotIdx=mySlot||0;
   wFrom=270;wTarget=270;wBase=270;wTimer=7;parts=[];postRaceReturn=false;postRaceWinner=null;windRaceClock=0;windMsg='';windMsgT=0;windShiftCount=0;raceGunMs=0;mark1Order=[];windShiftEvents=[{t:25+Math.random()*35,delta:(Math.random()<.5?-30:30),done:false},{t:75+Math.random()*55,delta:(Math.random()<.5?-30:30),done:false}];
@@ -1652,6 +1962,8 @@ function initGameCommon(mySlot){
 }
 
 function startLocal(twoPlayer){
+  selectedPrizeKind=null;prizeFaceActive=false;
+  const pdStart=document.getElementById('prizeDisplay');if(pdStart)pdStart.innerHTML='';
   const sel=document.getElementById('aiSkillSelect');
   if(sel)aiSkill=sel.value||'intermediate';
   mode='local';localP2=twoPlayer;vsAI=!twoPlayer;
@@ -1844,7 +2156,11 @@ function makePrizeHTML(kind){
 function choosePrize(kind){
   const pd=document.getElementById('prizeDisplay');
   if(!pd)return;
+  selectedPrizeKind=kind;
+  prizeFaceActive=true;
   pd.innerHTML=makePrizeHTML(kind)+makeCocoaHTML();
+  const boy=document.getElementById('prizeBoyFace');
+  if(boy){boy.dataset.prize=kind;boy.classList.add('show');boy.setAttribute('aria-hidden','false');}
 }
 
 function relBoomParallelToWind(b, extra=0){
@@ -1869,7 +2185,10 @@ function beginPostRaceReturn(winner){
     b.postRaceMooring=false;
     b.done=true;b.remote=false;
   });
-  choosePrize('hotdog');
+  // v39: do not auto-show the eating face. Wait until the player chooses a prize.
+  selectedPrizeKind=null;prizeFaceActive=false;
+  {const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.remove('show');boy.setAttribute('aria-hidden','true');}}
+  {const pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';}
 }
 function updatePostRaceReturn(dt){
   if(!postRaceReturn)return;
@@ -1967,8 +2286,11 @@ function hideAllOverlays(){
     document.getElementById(id).style.display='none';
   });
   document.getElementById('mo').style.display='none';
+  {const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.remove('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','true');}}
 }
 function showMenu(){
+  selectedPrizeKind=null;prizeFaceActive=false;
+  const pdMenu=document.getElementById('prizeDisplay');if(pdMenu)pdMenu.innerHTML='';
   courseEditMode=false;cleanupFB();phase='menu';onlineMode=false;localP2=false;vsAI=false;
   document.getElementById('p2Panel').style.display='none';document.getElementById('p2ks').style.display='none';
   cdDiv.style.display='none';boats=[];parts=[];postRaceReturn=false;postRaceWinner=null;
@@ -1992,6 +2314,66 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('keyup',e=>{keys[e.key]=false;});
 document.getElementById('c').addEventListener('wheel',e=>{ev(e);let b=boats[mySlotIdx];if(!b)return;b.sa=clamp(b.sa+(e.deltaY>0?-5:5),MSA,90);if(updTMy)updTMy();},{passive:false});
+
+
+
+/* v45 FINAL: prize-screen face behaviour
+   1) When the prize screen first appears: show the boy's happy face, no food.
+   2) Only after a prize button is pressed: add the food and start eating/chewing. */
+function setPrizeBoyWaiting(){
+  selectedPrizeKind=null;
+  prizeFaceActive=false;
+  const pd=document.getElementById('prizeDisplay');
+  if(pd) pd.innerHTML='';
+  const boy=document.getElementById('prizeBoyFace');
+  if(boy){
+    boy.classList.add('show');
+    boy.removeAttribute('data-prize');
+    boy.setAttribute('aria-hidden','false');
+  }
+}
+function setPrizeBoyHidden(){
+  const boy=document.getElementById('prizeBoyFace');
+  if(boy){
+    boy.classList.remove('show');
+    boy.removeAttribute('data-prize');
+    boy.setAttribute('aria-hidden','true');
+  }
+}
+function choosePrize(kind){
+  selectedPrizeKind=kind;
+  prizeFaceActive=true;
+  const pd=document.getElementById('prizeDisplay');
+  if(pd) pd.innerHTML=makePrizeHTML(kind)+makeCocoaHTML();
+  const boy=document.getElementById('prizeBoyFace');
+  if(boy){
+    boy.classList.add('show');
+    boy.dataset.prize=kind;
+    boy.setAttribute('aria-hidden','false');
+  }
+}
+function beginPostRaceReturn(winner){
+  postRaceReturn=true;postRaceWinner=winner||null;
+  const parallelA=90, parallelB=270;
+  const moorHead=Math.abs(sDiff(parallelA,wFrom))<Math.abs(sDiff(parallelB,wFrom))?parallelA:parallelB;
+  boats.filter(Boolean).forEach((b,i)=>{
+    b.postRaceHome=PONTOON_HOME[b.slot]||PONTOON_HOME[i%PONTOON_HOME.length];
+    b.postRaceMoorHead=moorHead;
+    b.postRaceMooring=false;
+    b.done=true;b.remote=false;
+  });
+  setPrizeBoyWaiting();
+}
+function devPrizeScreen(){
+  ensureDevBoats();hideAllOverlays();
+  document.getElementById('mt').textContent='🏆 Prize test';
+  document.getElementById('mb').innerHTML='Choose a victory snack — hot chocolate included.';
+  const a=document.getElementById('achievementsDisplay');if(a)a.innerHTML='';
+  document.getElementById('mo').style.display='flex';
+  setPrizeBoyWaiting();
+  beginPostRaceReturn(boats[mySlotIdx]||boats[0]);
+  phase='done';
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    BOOT
