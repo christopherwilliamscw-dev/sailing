@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — Happier Prize Face v46</title>
+<title>Piddinghoe Lake Sailing — v54 room-code all-keys fix</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -1097,10 +1097,42 @@ const keys={},tBtn={my:{l:0,r:0},p2:{l:0,r:0}};
    Use document-level listeners so A/S/W/D still work even after clicking a menu button.
    Prevent default for game keys so the browser does not scroll or steal focus. */
 const GAME_KEYS=new Set(['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H','F9']);
+const CONTROL_KEYS=['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H'];
+function isTypingInTextBox(e){
+  const el=e.target;
+  if(!el) return false;
+  const tag=(el.tagName||'').toLowerCase();
+  return tag==='input' || tag==='textarea' || tag==='select' || el.isContentEditable;
+}
+
+
+/* v54 FIX: the room-code input owns ALL keyboard input while focused.
+   This prevents any gameplay or developer shortcut (A/W/S/D, H, P, F9, arrows, etc.)
+   from firing while a player is typing a room code. Enter still joins the room. */
+(function protectRoomCodeInput(){
+  const roomInput=document.getElementById('roomInput');
+  if(!roomInput) return;
+  ['keydown','keyup','keypress'].forEach(function(type){
+    roomInput.addEventListener(type,function(e){
+      e.stopPropagation();
+      if(type==='keydown' && e.key==='Enter'){
+        e.preventDefault();
+        joinRoom();
+      }
+    },true);
+  });
+})();
+
 document.addEventListener('keydown',function(e){
+  // v53 FIX: when entering an online room code, A/W/S/D must type into the box,
+  // not be swallowed by the sailing controls.
+  if(isTypingInTextBox(e)){
+    if(e.key==='Enter' && e.target && e.target.id==='roomInput') joinRoom();
+    return;
+  }
   if(GAME_KEYS.has(e.key)){
     keys[e.key]=true;
-    if(['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H'].includes(e.key)) e.preventDefault();
+    if(CONTROL_KEYS.includes(e.key)) e.preventDefault();
   }
   if(e.key==='h'||e.key==='H'){
     showRouteHint=true;
@@ -1113,9 +1145,10 @@ document.addEventListener('keydown',function(e){
   }
 },{passive:false});
 document.addEventListener('keyup',function(e){
+  if(isTypingInTextBox(e)) return;
   if(GAME_KEYS.has(e.key)){
     keys[e.key]=false;
-    if(['a','A','d','D','w','W','s','S','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','h','H'].includes(e.key)) e.preventDefault();
+    if(CONTROL_KEYS.includes(e.key)) e.preventDefault();
   }
   if(e.key==='h'||e.key==='H'){
     showRouteHint=false;
