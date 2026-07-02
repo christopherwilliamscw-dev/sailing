@@ -547,6 +547,10 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <div class="overlay" id="onlineScreen" style="display:none">
       <h1>🌐 Online Play</h1>
       <p>Create a room or join with a code</p>
+      <div style="display:flex;flex-direction:column;gap:5px;align-items:center">
+        <label for="playerNameInput" style="font-size:12px;color:#aad890;font-weight:700">Your name</label>
+        <input type="text" id="playerNameInput" maxlength="16" placeholder="NAME" style="letter-spacing:1px;text-transform:none" autocomplete="nickname">
+      </div>
       <button class="btn btn-g" onclick="createRoom()">➕ Create Room</button>
       <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center">
         <input type="text" id="roomInput" maxlength="6" placeholder="ROOM CODE" oninput="this.value=this.value.toUpperCase()">
@@ -1111,15 +1115,19 @@ function isTypingInTextBox(e){
    from firing while a player is typing a room code. Enter still joins the room. */
 (function protectRoomCodeInput(){
   const roomInput=document.getElementById('roomInput');
-  if(!roomInput) return;
-  ['keydown','keyup','keypress'].forEach(function(type){
-    roomInput.addEventListener(type,function(e){
-      e.stopPropagation();
-      if(type==='keydown' && e.key==='Enter'){
-        e.preventDefault();
-        joinRoom();
-      }
-    },true);
+  const nameInput=document.getElementById('playerNameInput');
+  [roomInput,nameInput].forEach(function(inp){
+    if(!inp)return;
+    ['keydown','keyup','keypress'].forEach(function(type){
+      inp.addEventListener(type,function(e){
+        e.stopPropagation();
+        if(type==='keydown' && e.key==='Enter'){
+          e.preventDefault();
+          if(inp===nameInput && roomInput){roomInput.focus();}
+          else joinRoom();
+        }
+      },true);
+    });
   });
 })();
 
@@ -1735,7 +1743,7 @@ function update(dt){
       x:Math.round(mb.x*10)/10,y:Math.round(mb.y*10)/10,head:Math.round(mb.head*10)/10,
       spd:Math.round(mb.spd*100)/100,sa:Math.round(mb.sa),ssa:Math.round(mb.ssa*10)/10,
       lap:mb.lap,leg:mb.leg,started:mb.started,done:mb.done,bumpT:mb.bumpT>0?1:0,
-      col:mb.col,name:mb.name,lastSeen:Date.now()
+      col:mb.col,name:mb.name,playerName:mb.playerName||'',lastSeen:Date.now()
     });
     // Host also updates wind
     if(isHost)roomRef.child('wind').update({from:Math.round(wFrom*10)/10,target:Math.round(wTarget*10)/10});
@@ -2319,8 +2327,8 @@ function startLocal(twoPlayer){
 }
 
 function styleMyPanel(slot){
-  let col=BOAT_COLS[slot],name=BOAT_NAMES[slot];
-  document.getElementById('myLabel').textContent='MY BOAT ('+name+')';
+  let col=BOAT_COLS[slot],name=(boats[slot]&&boats[slot].name)?boats[slot].name:boatFullName(slot,'');
+  document.getElementById('myLabel').textContent='MY BOAT — '+name;
   document.getElementById('myLabel').style.color=col;
   document.getElementById('mySt').style.borderColor=col;
   document.getElementById('myTh').style.background=col;
@@ -2333,9 +2341,31 @@ function styleMyPanel(slot){
    ═══════════════════════════════════════════════════════════════════════════ */
 const ROOM_CHARS='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function randRoomCode(){let c='';for(let i=0;i<5;i++)c+=ROOM_CHARS[Math.floor(Math.random()*ROOM_CHARS.length)];return c;}
+function cleanPlayerName(){
+  const inp=document.getElementById('playerNameInput');
+  let n=(inp&&inp.value?inp.value:'').trim().replace(/[\"<>]/g,'').replace(/\s+/g,' ');
+  if(n.length>16)n=n.slice(0,16).trim();
+  return n;
+}
+function boatFullName(slot,playerName){
+  const base=BOAT_NAMES[slot]+' Boat '+(slot+1);
+  return playerName?base+' “'+playerName+'”':base;
+}
+function requirePlayerName(){
+  const n=cleanPlayerName();
+  if(!n){showOnlineErr('Please enter your name first');const inp=document.getElementById('playerNameInput');if(inp)inp.focus();return null;}
+  try{localStorage.setItem('piddinghoePlayerName',n);}catch(e){}
+  return n;
+}
+function restorePlayerName(){
+  const inp=document.getElementById('playerNameInput');
+  if(!inp)return;
+  try{if(!inp.value)inp.value=localStorage.getItem('piddinghoePlayerName')||'';}catch(e){}
+}
 
 function createRoom(){
   if(!initFirebase()){showOnlineErr('Firebase not configured. See setup instructions.');return;}
+  const playerName=requirePlayerName(); if(!playerName)return;
   roomId=randRoomCode();isHost=true;
   mySlot=0;mySlotIdx=0;
   onlineMode=true;
@@ -2345,13 +2375,14 @@ function createRoom(){
     phase:'waiting',createdAt:Date.now(),
     wind:{from:wFrom,target:wTarget},
     marks:markLayout(),
-    boats:{0:{slot:0,col:BOAT_COLS[0],name:BOAT_NAMES[0],active:true,lastSeen:Date.now(),x:START_POS[0].x,y:START_POS[0].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0}}
+    boats:{0:{slot:0,col:BOAT_COLS[0],name:boatFullName(0,playerName),playerName:playerName,active:true,lastSeen:Date.now(),x:START_POS[0].x,y:START_POS[0].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0}}
   });
   showWaitRoom();
 }
 
 function joinRoom(){
   if(!initFirebase()){showOnlineErr('Firebase not configured.');return;}
+  const playerName=requirePlayerName(); if(!playerName)return;
   let code=document.getElementById('roomInput').value.trim().toUpperCase();
   if(code.length<4){showOnlineErr('Enter a valid room code');return;}
   roomId=code;isHost=false;
@@ -2368,7 +2399,7 @@ function joinRoom(){
     if(freeSlot<0){showOnlineErr('Room is full (4 players)');return;}
     mySlot=freeSlot;mySlotIdx=freeSlot;
     // Register in room
-    roomRef.child('boats/'+mySlot).set({slot:mySlot,col:BOAT_COLS[mySlot],name:BOAT_NAMES[mySlot],active:true,lastSeen:Date.now(),x:START_POS[mySlot].x,y:START_POS[mySlot].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0});
+    roomRef.child('boats/'+mySlot).set({slot:mySlot,col:BOAT_COLS[mySlot],name:boatFullName(mySlot,playerName),playerName:playerName,active:true,lastSeen:Date.now(),x:START_POS[mySlot].x,y:START_POS[mySlot].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0});
     showWaitRoom();
   });
 }
@@ -2388,7 +2419,7 @@ function showWaitRoom(){
       let div=document.createElement('div');div.className='wslot';
       if(bd&&bd.active){
         div.style.borderColor=BOAT_COLS[i];div.style.color=BOAT_COLS[i];div.style.background='rgba(0,0,0,.3)';
-        div.textContent='Boat '+(i+1)+' ('+BOAT_NAMES[i]+') '+(i===mySlotIdx?'← YOU':'✓');
+        div.textContent=(bd.name||boatFullName(i,bd.playerName||''))+' '+(i===mySlotIdx?'← YOU':'✓');
         count++;
       } else {
         div.style.borderColor='#333';div.style.color='#555';div.style.background='rgba(0,0,0,.15)';
@@ -2423,6 +2454,8 @@ function startOnlineRace(){
       let bd=data[i];
       if(bd){
         boats[i]=mkBoat(i);
+        boats[i].name=bd.name||boatFullName(i,bd.playerName||'');
+        boats[i].playerName=bd.playerName||'';
         boats[i].remote=(i!==mySlotIdx);
         if(i!==mySlotIdx)boats[i].spd=bd.spd||0;
       }
@@ -2446,6 +2479,7 @@ function startOnlineRace(){
         let b=boats[i];
         b.x=bd2.x||b.x;b.y=bd2.y||b.y;b.head=bd2.head||b.head;
         b.spd=bd2.spd||0;b.sa=bd2.sa||45;b.ssa=bd2.ssa||0;
+        if(bd2.name)b.name=bd2.name; if(bd2.playerName)b.playerName=bd2.playerName;
         b.lap=bd2.lap||0;b.leg=bd2.leg||0;b.started=bd2.started||false;
         b.done=bd2.done||false;b.bumpT=bd2.bumpT||0;b.lastSeen=Date.now();
       }
@@ -2623,7 +2657,7 @@ function showMenu(){
   hideAllOverlays();const menu=document.getElementById('menuScreen');if(menu)menu.style.display='flex';
 }
 function showLocalSetup(){courseEditMode=false;hideAllOverlays();const el=document.getElementById('localScreen');if(el)el.style.display='flex';}
-function showOnlineSetup(){courseEditMode=false;hideAllOverlays();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';}
+function showOnlineSetup(){courseEditMode=false;hideAllOverlays();restorePlayerName();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';const nameInp=document.getElementById('playerNameInput');if(nameInp&&!nameInp.value)nameInp.focus();}
 function showCourseEditor(){cleanupFB();courseEditMode=true;phase='menu';boats=[];parts=[];if(cdDiv)cdDiv.style.display='none';hideAllOverlays();const el=document.getElementById('editScreen');if(el)el.style.display='flex';}
 function finishCourseEditor(){saveCourseLayout();courseEditMode=false;showMenu();}
 function toggleFS(){let w=document.getElementById('cw');document.fullscreenElement?document.exitFullscreen():(w.requestFullscreen&&w.requestFullscreen());}
