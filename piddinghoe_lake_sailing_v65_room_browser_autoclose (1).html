@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — v65 multiplayer lobby redesign</title>
+<title>Piddinghoe Lake Sailing — v64 visible gybe sail crossing</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
@@ -934,12 +934,6 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 .room-card small{display:block;color:#9dcc9d;font-size:10px;}
 .room-card.full,.room-card.stale{border-color:#555;color:#888;background:#151515;cursor:not-allowed;filter:none;}
 .room-empty{font-size:11px;color:#7ab870;text-align:center;padding:8px;}
-/* v65 clean lobby cards */
-.room-card.racing{border-color:#777;background:#151515;color:#aaa;cursor:not-allowed;}
-.room-card.waiting{border-color:#44bb44;}
-.room-card .status{float:right;color:#88ff88;font-size:10px;}
-.room-card.racing .status,.room-card.full .status{color:#ffcc66;}
-
 
 </style>
 </head>
@@ -996,7 +990,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <div class="overlay" id="editScreen" style="display:none;background:rgba(5,20,5,.35);pointer-events:none;justify-content:flex-start;padding-top:14px">
       <div id="editControls" style="pointer-events:auto;background:rgba(5,20,5,.86);border:2px solid #44bb44;border-radius:12px;padding:10px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:560px">
         <strong style="color:#88ff88;font-size:13px">Drag the buoys to set the course</strong>
-        <span style="color:#aad890;font-size:11px">Orange=1, Green=2, Pink pair=start/finish & mark 3</span>
+        <span style="color:#aad890;font-size:11px">Blue=1, Green=2, Pink pair=start/finish & mark 3</span>
         <button class="btn btn-g btn-sm" onclick="saveCourseLayout()">Save layout</button>
         <button class="btn btn-y btn-sm" onclick="resetCourseLayout()">Reset buoys</button>
         <button class="btn btn-r btn-sm" onclick="finishCourseEditor()">Done</button>
@@ -1040,14 +1034,14 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <!-- ONLINE SETUP -->
     <div class="overlay" id="onlineScreen" style="display:none">
       <h1>🌐 Online Play</h1>
-      <p>Enter your name, create a room, or click an open room to join it</p>
+      <p>Create a room, or click an open room below to join it</p>
       <div style="display:flex;flex-direction:column;gap:5px;align-items:center">
         <label for="playerNameInput" style="font-size:12px;color:#aad890;font-weight:700">Your name</label>
         <input type="text" id="playerNameInput" maxlength="16" placeholder="NAME" style="letter-spacing:1px;text-transform:none" autocomplete="nickname">
       </div>
       <button class="btn btn-g" onclick="createRoom()">➕ Create Room</button>
       <div id="roomBrowser" style="display:flex;flex-direction:column;gap:6px;min-width:260px;max-width:420px;width:min(420px,86vw);max-height:190px;overflow:auto;padding:5px;border:2px solid #244b24;border-radius:12px;background:rgba(0,0,0,.16)">
-        <div style="font-size:11px;color:#7ab870;text-align:center">Looking for rooms…</div>
+        <div style="font-size:11px;color:#7ab870;text-align:center">Looking for open rooms…</div>
       </div>
       <button class="btn btn-b btn-sm" onclick="refreshRoomBrowser(true)">↻ Refresh rooms</button>
       <input type="text" id="roomInput" maxlength="6" placeholder="ROOM CODE" oninput="this.value=this.value.toUpperCase()" style="display:none">
@@ -1059,7 +1053,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <div class="overlay" id="waitScreen" style="display:none">
       <h1>⚓ Waiting Room</h1>
       <p id="roomCodeDisplay" style="font-size:18px;color:#ffee88;letter-spacing:4px;font-weight:700"></p>
-      <p style="font-size:11px">Players can join from the room list.</p>
+      <p style="font-size:11px">Share this code with friends!</p>
       <div id="waitList"></div>
       <button class="btn btn-g" id="startOnlineBtn" onclick="hostStartRace()" style="display:none">🏁 Start Race!</button>
       <p id="waitStatus" style="font-size:11px;color:#7ab870">Waiting for players...</p>
@@ -2022,7 +2016,7 @@ function finishRace(winner, reason){
   beginPostRaceReturn(winner);
   playPostRaceChatterSequence();
   phase='done';
-  if(onlineMode&&roomRef){const rr=roomRef;setTimeout(()=>{try{rr.remove();}catch(e){}},1500);}
+  if(onlineMode&&roomRef){const rr=roomRef;setTimeout(()=>{try{rr.remove();}catch(e){}},1200);}
 }
 function ensureDevBoats(){
   if(!boats||!boats.length){
@@ -2903,51 +2897,30 @@ function roomSummaryFromData(id,data){
   for(let i=0;i<4;i++){
     const b=boats[i];
     if(b&&b.active!==false&&(nowMs-(b.lastInput||b.lastSeen||data.updatedAt||data.createdAt||0)<ROOM_STALE_MS)){
-      active.push({slot:i,name:b.name||boatFullName(i,b.playerName||''),playerName:b.playerName||''});
+      active.push(b.name||boatFullName(i,b.playerName||''));
     }
   }
-  const hostSlot=(data&&Number.isFinite(data.hostSlot))?data.hostSlot:0;
-  const hostBoat=boats[hostSlot]||active[0]||{};
-  const hostName=(data&&data.hostName)||hostBoat.playerName||hostBoat.name||'Host';
-  return {
-    id,
-    phase:(data&&data.phase)||'waiting',
-    count:active.length,
-    players:active.map(p=>p.name),
-    hostName,
-    createdAt:(data&&data.createdAt)||0,
-    updatedAt:(data&&data.updatedAt)||(data&&data.createdAt)||0
-  };
+  return {id,phase:(data&&data.phase)||'waiting',count:active.length,players:active,updatedAt:(data&&data.updatedAt)||(data&&data.createdAt)||0};
 }
 function refreshRoomBrowser(manual){
   const box=document.getElementById('roomBrowser');
   if(!box)return;
   if(!initFirebase()){box.innerHTML='<div class="room-empty">Firebase not configured.</div>';return;}
   if(roomBrowserRef&&roomBrowserListener){roomBrowserRef.off('value',roomBrowserListener);roomBrowserListener=null;}
-  roomBrowserRef=db.ref('rooms');
+  roomBrowserRef=db.ref('rooms').orderByChild('phase').equalTo('waiting');
   roomBrowserListener=roomBrowserRef.on('value',snap=>{
     const raw=snap.val()||{};
-    const nowMs=Date.now();
-    Object.keys(raw).forEach(id=>{
-      const d=raw[id]||{};
-      if(nowMs-((d.updatedAt||d.createdAt)||0)>ROOM_STALE_MS){
-        try{db.ref('rooms/'+id).remove();}catch(e){}
-        delete raw[id];
-      }
-    });
     const rooms=Object.keys(raw).map(id=>roomSummaryFromData(id,raw[id]))
-      .filter(r=>r.count>0)
-      .sort((a,b)=>(b.updatedAt||b.createdAt)-(a.updatedAt||a.createdAt));
-    if(!rooms.length){box.innerHTML='<div class="room-empty">No rooms yet. Create one to start.</div>';return;}
+      .filter(r=>r.phase==='waiting'&&r.count>0&&(Date.now()-r.updatedAt<ROOM_STALE_MS))
+      .sort((a,b)=>b.updatedAt-a.updatedAt);
+    if(!rooms.length){box.innerHTML='<div class="room-empty">No open rooms yet. Create one to start.</div>';return;}
     box.innerHTML='';
     rooms.forEach(r=>{
-      const joinable=r.phase==='waiting'&&r.count<4;
       const btn=document.createElement('button');
-      btn.className='room-card '+(joinable?'waiting':'racing')+(r.count>=4?' full':'');
-      btn.disabled=!joinable;
-      const status=r.phase==='waiting'?(r.count>=4?'Full':'Waiting'):'Race in progress';
-      btn.innerHTML='<strong>'+escapeHTML(r.hostName)+"'s room"+' <span class="status">'+escapeHTML(status)+'</span></strong><small>'+r.count+'/4 players · '+r.players.map(x=>escapeHTML(x)).join(', ')+'</small>';
-      if(joinable)btn.onclick=function(){joinRoom(r.id);};
+      btn.className='room-card'+(r.count>=4?' full':'');
+      btn.disabled=r.count>=4;
+      btn.innerHTML='<strong>Room '+r.id+' · '+r.count+'/4 players</strong><small>'+r.players.map(x=>escapeHTML(x)).join(', ')+'</small>';
+      btn.onclick=function(){joinRoom(r.id);};
       box.appendChild(btn);
     });
   });
@@ -3008,7 +2981,7 @@ function createRoom(){
   roomRef=db.ref('rooms/'+roomId);
   const nowMs=Date.now();
   roomRef.set({
-    phase:'waiting',createdAt:nowMs,updatedAt:nowMs,hostSlot:0,hostName:playerName,
+    phase:'waiting',createdAt:nowMs,updatedAt:nowMs,hostSlot:0,
     wind:{from:wFrom,target:wTarget},
     marks:markLayout(),
     boats:{0:{slot:0,col:BOAT_COLS[0],name:boatFullName(0,playerName),playerName:playerName,active:true,lastSeen:nowMs,lastInput:nowMs,x:START_POS[0].x,y:START_POS[0].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0}}
@@ -3050,7 +3023,7 @@ function joinRoom(roomCode){
 function showWaitRoom(){
   hideAllOverlays();
   document.getElementById('waitScreen').style.display='flex';
-  document.getElementById('roomCodeDisplay').textContent=isHost?'Your room':'Joined room';
+  document.getElementById('roomCodeDisplay').textContent='Room '+roomId;
   if(isHost)document.getElementById('startOnlineBtn').style.display='block';
   else document.getElementById('startOnlineBtn').style.display='none';
   let boatsListener=roomRef.child('boats').on('value',snap=>{
@@ -3071,7 +3044,7 @@ function showWaitRoom(){
       }
       wl.appendChild(div);
     }
-    document.getElementById('waitStatus').textContent=isHost?(count+' player'+(count!==1?'s':'')+' ready · press Start Race when ready'):'Waiting for host to start…';
+    document.getElementById('waitStatus').textContent=count+' player'+(count!==1?'s':'')+ ' ready';
   });
   fbListeners.push(()=>roomRef.child('boats').off('value',boatsListener));
   let phaseListener=roomRef.child('phase').on('value',snap=>{
