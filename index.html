@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — v63 capsize/RIB/wind tweaks</title>
+<title>Piddinghoe Lake Sailing — v64 visible gybe sail crossing</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
@@ -3816,6 +3816,154 @@ drawBoat=function(b){
     __v61_drawBoat(b);
   };
 })();
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v64: visible uncontrolled-gybe pre-capsize
+   - gybe sound plays as the boom/sail crosses the centreline
+   - sail visibly swings right across to the other side before wobble starts
+   - then the existing slow wobble, splash, rescue and righting sequence begins
+   ═══════════════════════════════════════════════════════════════════════════ */
+(function(){
+  const GYBE_SWING_TIME = 2.25;
+
+  function v64Basis(b){
+    const h=(b.capsizeHead||b.head||0)*Math.PI/180;
+    return {fx:Math.sin(h), fy:-Math.cos(h), sx:Math.cos(h), sy:Math.sin(h)};
+  }
+  function v64Point(b,forward,side){
+    const q=v64Basis(b);
+    return {x:b.x+q.fx*forward+q.sx*side, y:b.y+q.fy*forward+q.sy*side};
+  }
+  function v64Smooth(t){return t*t*(3-2*t);}
+  function v64SideName(s){return s<0?'port':'starboard';}
+
+  // Keep the sail side from just before the physics update, so the gybe animation
+  // knows which side the boom came from and which side it snapped across to.
+  const __v64_updBoat = updBoat;
+  updBoat=function(b,dt,tL,tR,shI,shO){
+    if(b && !(b.capsizeActive||b.capsizeT>0)){
+      b._v64SideBefore = (b.ssa<0?-1:(b.ssa>0?1:(b._v64SideBefore||1)));
+    }
+    __v64_updBoat(b,dt,tL,tR,shI,shO);
+  };
+
+  const __v64_capsizeBoat = capsizeBoat;
+  capsizeBoat=function(b,why){
+    const gybe=((why||'').toLowerCase().indexOf('gybe')>=0);
+    const fromSide=(b && b._v64SideBefore) ? (b._v64SideBefore<0?-1:1) : ((b&&b.ssa<0)?-1:1);
+    const toSide=(b && b.ssa) ? (b.ssa<0?-1:1) : -fromSide;
+    __v64_capsizeBoat(b,why);
+    if(!b||!gybe||!b.capsizeActive)return;
+    b.capsizePhase='gybeSwing';
+    b.capsizeGybeT=GYBE_SWING_TIME;
+    b.capsizeGybeFromSide=fromSide;
+    b.capsizeGybeToSide=(toSide===fromSide?-fromSide:toSide);
+    b.capsizeWobbleT=CAPSIZE_WOBBLE_TIME;
+    b.capsizeWobbleStrength=0;
+    b.sa=72;
+    b.ssa=0;
+    b.dA=8;
+    capsizeMsg='⚠️ Uncontrolled gybe — boom crossing the boat!';
+    capsizeMsgT=GYBE_SWING_TIME+CAPSIZE_WOBBLE_TIME+1.2;
+  };
+
+  const __v64_updateCapsizedBoat = updateCapsizedBoat;
+  updateCapsizedBoat=function(b,dt){
+    if(!b.capsizeActive && !(b.capsizeT>0))return;
+    if(b.capsizePhase==='gybeSwing'){
+      b.spd=0;b.vx=0;b.vy=0;b.gW=0;b.gK=0;
+      b.capsizeGybeT=Math.max(0,(b.capsizeGybeT||0)-dt);
+      const p=clamp(1-(b.capsizeGybeT||0)/GYBE_SWING_TIME,0,1);
+      const e=v64Smooth(p);
+      // Sail crosses the boat first; wobble does not start until it has landed the other side.
+      const from=b.capsizeGybeFromSide||1, to=b.capsizeGybeToSide||-from;
+      b.ssa=from+(to-from)*e;
+      b.sa=72+10*Math.sin(Math.PI*e);
+      b.dA=8+12*e;
+      b.x+=(Math.sin(now*1.7+b.slot)*0.035);
+      b.y+=(Math.cos(now*1.5+b.slot)*0.025);
+      if(b.capsizeGybeT<=0){
+        b.capsizePhase='wobble';
+        b.capsizeWobbleT=CAPSIZE_WOBBLE_TIME;
+        b.capsizeWobbleStrength=0;
+        b.ssa=to*42;
+        capsizeMsg='⚠️ Boom across — boat losing balance!';
+        capsizeMsgT=CAPSIZE_WOBBLE_TIME+1.2;
+      }
+      return;
+    }
+    __v64_updateCapsizedBoat(b,dt);
+  };
+
+  function v64DrawGybeSwingBoat(b){
+    const p=clamp(1-(b.capsizeGybeT||0)/GYBE_SWING_TIME,0,1);
+    const e=v64Smooth(p);
+    const from=b.capsizeGybeFromSide||1, to=b.capsizeGybeToSide||-from;
+    const side=from+(to-from)*e;
+    const q=v64Basis(b);
+    const tinyWobble=Math.sin(now*5.2+b.slot)*(1+5*e);
+
+    // Hull: same heading/orientation, only a slight nervous roll. It has not capsized yet.
+    ctx.save();
+    ctx.translate(b.x,b.y);
+    ctx.rotate(((b.capsizeHead||b.head)+tinyWobble)*Math.PI/180);
+    ctx.scale(BSC,BSC);
+    ctx.fillStyle=b.col;ctx.strokeStyle='rgba(0,0,0,.65)';ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(0,-48);ctx.bezierCurveTo(25,-20,27,16,18,38);ctx.lineTo(-18,38);ctx.bezierCurveTo(-27,16,-25,-20,0,-48);ctx.closePath();
+    ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.92)';ctx.font='bold 14px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(String((b.slot||0)+1),0,2);
+    ctx.restore();
+
+    // Centreline so the crossing is obvious.
+    const bow=v64Point(b,34*BSC,0), stern=v64Point(b,-28*BSC,0);
+    ctx.save();ctx.globalAlpha=.32;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2;ctx.setLineDash([5,5]);
+    ctx.beginPath();ctx.moveTo(bow.x,bow.y);ctx.lineTo(stern.x,stern.y);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+
+    // Boom and triangular mainsail swinging across.  At p=0 it is on the old side,
+    // at p=.5 it crosses the centreline, at p=1 it is right over on the new side.
+    const mastBase=v64Point(b,15*BSC,0);
+    const boomEnd=v64Point(b,-8*BSC,side*86*BSC);
+    const mastHead=v64Point(b,35*BSC,side*42*BSC);
+    const tack=v64Point(b,14*BSC,side*10*BSC);
+
+    ctx.save();
+    ctx.globalAlpha=.84;
+    ctx.fillStyle='rgba(252,252,246,.88)';ctx.strokeStyle='rgba(45,80,120,.70)';ctx.lineWidth=2.3;
+    ctx.beginPath();ctx.moveTo(tack.x,tack.y);ctx.lineTo(boomEnd.x,boomEnd.y);ctx.lineTo(mastHead.x,mastHead.y);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.strokeStyle='rgba(104,58,24,.96)';ctx.lineWidth=4.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(mastBase.x,mastBase.y);ctx.lineTo(boomEnd.x,boomEnd.y);ctx.stroke();
+    ctx.strokeStyle='rgba(55,55,55,.92)';ctx.lineWidth=3.2;
+    ctx.beginPath();ctx.moveTo(mastBase.x,mastBase.y);ctx.lineTo(mastHead.x,mastHead.y);ctx.stroke();
+    ctx.restore();
+
+    // Movement ghost/arc of the boom from old side to new side.
+    const oldEnd=v64Point(b,-8*BSC,from*86*BSC);
+    const newEnd=v64Point(b,-8*BSC,to*86*BSC);
+    ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle='rgba(255,230,80,.9)';ctx.lineWidth=2;ctx.setLineDash([6,6]);
+    ctx.beginPath();ctx.moveTo(oldEnd.x,oldEnd.y);ctx.quadraticCurveTo(v64Point(b,-18*BSC,0).x,v64Point(b,-18*BSC,0).y,newEnd.x,newEnd.y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,230,80,.95)';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('boom crossing',b.x,b.y-34);
+    ctx.restore();
+  }
+
+  const __v64_drawBoat = drawBoat;
+  drawBoat=function(b){
+    if(!b)return;
+    if(b.capsizeActive&&b.capsizePhase==='gybeSwing'){v64DrawGybeSwingBoat(b);return;}
+    __v64_drawBoat(b);
+  };
+
+  // DEV button label remains useful, but make sure it shows the new first stage.
+  const oldDev = window.devCapsizeMyBoat || devCapsizeMyBoat;
+  window.devCapsizeMyBoat=function(){
+    const b=boats && boats[mySlotIdx||0];
+    if(b){b._v64SideBefore=(b.ssa<0?-1:1);b.ssa=-b._v64SideBefore*48;}
+    oldDev();
+  };
+})();
+
 </script>
 </body>
 </html>
