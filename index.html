@@ -927,6 +927,14 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 #prizeBoyFace[data-prize="crisps"] .prize-bite:before{content:"🥔" !important;font-size:76px !important;}
 #prizeDisplay .crisps-award{transform:scale(.62) !important;transform-origin:center center !important;animation:none !important;}
 
+/* v65 room browser / auto-cleanup */
+.room-card{font-family:inherit;text-align:left;border:2px solid #44bb44;border-radius:10px;background:#102510;color:#d8ffd8;padding:8px 10px;cursor:pointer;line-height:1.25;box-shadow:0 3px 8px rgba(0,0,0,.28);}
+.room-card:hover{filter:brightness(1.22);}
+.room-card strong{display:block;color:#ffee88;font-size:13px;margin-bottom:2px;}
+.room-card small{display:block;color:#9dcc9d;font-size:10px;}
+.room-card.full,.room-card.stale{border-color:#555;color:#888;background:#151515;cursor:not-allowed;filter:none;}
+.room-empty{font-size:11px;color:#7ab870;text-align:center;padding:8px;}
+
 </style>
 </head>
 <body>
@@ -1026,16 +1034,17 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <!-- ONLINE SETUP -->
     <div class="overlay" id="onlineScreen" style="display:none">
       <h1>🌐 Online Play</h1>
-      <p>Create a room or join with a code</p>
+      <p>Create a room, or click an open room below to join it</p>
       <div style="display:flex;flex-direction:column;gap:5px;align-items:center">
         <label for="playerNameInput" style="font-size:12px;color:#aad890;font-weight:700">Your name</label>
         <input type="text" id="playerNameInput" maxlength="16" placeholder="NAME" style="letter-spacing:1px;text-transform:none" autocomplete="nickname">
       </div>
       <button class="btn btn-g" onclick="createRoom()">➕ Create Room</button>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center">
-        <input type="text" id="roomInput" maxlength="6" placeholder="ROOM CODE" oninput="this.value=this.value.toUpperCase()">
-        <button class="btn btn-b btn-sm" onclick="joinRoom()">Join →</button>
+      <div id="roomBrowser" style="display:flex;flex-direction:column;gap:6px;min-width:260px;max-width:420px;width:min(420px,86vw);max-height:190px;overflow:auto;padding:5px;border:2px solid #244b24;border-radius:12px;background:rgba(0,0,0,.16)">
+        <div style="font-size:11px;color:#7ab870;text-align:center">Looking for open rooms…</div>
       </div>
+      <button class="btn btn-b btn-sm" onclick="refreshRoomBrowser(true)">↻ Refresh rooms</button>
+      <input type="text" id="roomInput" maxlength="6" placeholder="ROOM CODE" oninput="this.value=this.value.toUpperCase()" style="display:none">
       <div id="onlineErr" style="color:#ff8888;font-size:11px;min-height:16px"></div>
       <button class="btn btn-sm btn-r" onclick="showMenu()">← Back</button>
     </div>
@@ -1098,6 +1107,9 @@ const FB_CONFIG = {apiKey: "AIzaSyC7qzehJs1HewQbagbc926BH5wMhnsXvJ8",
 };
 let fbApp, db, roomRef, mySlot=null, roomId=null, isHost=false;
 let onlineMode=false, fbListeners=[];
+let roomBrowserRef=null, roomBrowserListener=null;
+let lastUserInputAt=Date.now(), onlineHeartbeatTimer=null;
+const ROOM_STALE_MS=5*60*1000;
 
 function initFirebase(){
   if(fbApp) return true;
@@ -1619,10 +1631,9 @@ function isTypingInTextBox(e){
 }
 
 
-/* v54 FIX: the room-code input owns ALL keyboard input while focused.
-   This prevents any gameplay or developer shortcut (A/W/S/D, H, P, F9, arrows, etc.)
-   from firing while a player is typing a room code. Enter still joins the room. */
-(function protectRoomCodeInput(){
+/* v65: text inputs own keyboard input while focused.
+   The old room-code input is hidden but retained for compatibility with older joinRoom calls. */
+(function protectOnlineTextInputs(){
   const roomInput=document.getElementById('roomInput');
   const nameInput=document.getElementById('playerNameInput');
   [roomInput,nameInput].forEach(function(inp){
@@ -1630,9 +1641,10 @@ function isTypingInTextBox(e){
     ['keydown','keyup','keypress'].forEach(function(type){
       inp.addEventListener(type,function(e){
         e.stopPropagation();
+        markUserInput();
         if(type==='keydown' && e.key==='Enter'){
           e.preventDefault();
-          if(inp===nameInput && roomInput){roomInput.focus();}
+          if(inp===nameInput){createRoom();}
           else joinRoom();
         }
       },true);
@@ -1640,7 +1652,10 @@ function isTypingInTextBox(e){
   });
 })();
 
+function markUserInput(){lastUserInputAt=Date.now();}
+['pointerdown','touchstart','mousedown','wheel'].forEach(type=>{document.addEventListener(type,markUserInput,{passive:true});});
 document.addEventListener('keydown',function(e){
+  markUserInput();
   // v53 FIX: when entering an online room code, A/W/S/D must type into the box,
   // not be swallowed by the sailing controls.
   if(isTypingInTextBox(e)){
@@ -2001,6 +2016,7 @@ function finishRace(winner, reason){
   beginPostRaceReturn(winner);
   playPostRaceChatterSequence();
   phase='done';
+  if(onlineMode&&roomRef){const rr=roomRef;setTimeout(()=>{try{rr.remove();}catch(e){}},1200);}
 }
 function ensureDevBoats(){
   if(!boats||!boats.length){
@@ -2254,10 +2270,10 @@ function update(dt){
       x:Math.round(mb.x*10)/10,y:Math.round(mb.y*10)/10,head:Math.round(mb.head*10)/10,
       spd:Math.round(mb.spd*100)/100,sa:Math.round(mb.sa),ssa:Math.round(mb.ssa*10)/10,
       lap:mb.lap,leg:mb.leg,started:mb.started,done:mb.done,bumpT:mb.bumpT>0?1:0,
-      col:mb.col,name:mb.name,playerName:mb.playerName||'',lastSeen:Date.now()
+      col:mb.col,name:mb.name,playerName:mb.playerName||'',lastSeen:Date.now(),lastInput:lastUserInputAt
     });
     // Host also updates wind
-    if(isHost)roomRef.child('wind').update({from:Math.round(wFrom*10)/10,target:Math.round(wTarget*10)/10});
+    if(isHost)roomRef.update({updatedAt:Date.now(),wind:{from:Math.round(wFrom*10)/10,target:Math.round(wTarget*10)/10}});
   }
 
   parts=parts.filter(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=p.decay;return p.life>0;});
@@ -2874,43 +2890,132 @@ function restorePlayerName(){
   try{if(!inp.value)inp.value=localStorage.getItem('piddinghoePlayerName')||'';}catch(e){}
 }
 
+function roomSummaryFromData(id,data){
+  const boats=data&&data.boats?data.boats:{};
+  const nowMs=Date.now();
+  const active=[];
+  for(let i=0;i<4;i++){
+    const b=boats[i];
+    if(b&&b.active!==false&&(nowMs-(b.lastInput||b.lastSeen||data.updatedAt||data.createdAt||0)<ROOM_STALE_MS)){
+      active.push(b.name||boatFullName(i,b.playerName||''));
+    }
+  }
+  return {id,phase:(data&&data.phase)||'waiting',count:active.length,players:active,updatedAt:(data&&data.updatedAt)||(data&&data.createdAt)||0};
+}
+function refreshRoomBrowser(manual){
+  const box=document.getElementById('roomBrowser');
+  if(!box)return;
+  if(!initFirebase()){box.innerHTML='<div class="room-empty">Firebase not configured.</div>';return;}
+  if(roomBrowserRef&&roomBrowserListener){roomBrowserRef.off('value',roomBrowserListener);roomBrowserListener=null;}
+  roomBrowserRef=db.ref('rooms').orderByChild('phase').equalTo('waiting');
+  roomBrowserListener=roomBrowserRef.on('value',snap=>{
+    const raw=snap.val()||{};
+    const rooms=Object.keys(raw).map(id=>roomSummaryFromData(id,raw[id]))
+      .filter(r=>r.phase==='waiting'&&r.count>0&&(Date.now()-r.updatedAt<ROOM_STALE_MS))
+      .sort((a,b)=>b.updatedAt-a.updatedAt);
+    if(!rooms.length){box.innerHTML='<div class="room-empty">No open rooms yet. Create one to start.</div>';return;}
+    box.innerHTML='';
+    rooms.forEach(r=>{
+      const btn=document.createElement('button');
+      btn.className='room-card'+(r.count>=4?' full':'');
+      btn.disabled=r.count>=4;
+      btn.innerHTML='<strong>Room '+r.id+' · '+r.count+'/4 players</strong><small>'+r.players.map(x=>escapeHTML(x)).join(', ')+'</small>';
+      btn.onclick=function(){joinRoom(r.id);};
+      box.appendChild(btn);
+    });
+  });
+  if(manual)showOnlineErr('');
+}
+function escapeHTML(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function stopRoomBrowser(){if(roomBrowserRef&&roomBrowserListener){roomBrowserRef.off('value',roomBrowserListener);}roomBrowserRef=null;roomBrowserListener=null;}
+function startOnlineHeartbeat(){
+  stopOnlineHeartbeat();
+  onlineHeartbeatTimer=setInterval(function(){
+    if(!onlineMode||!roomRef||mySlot===null)return;
+    const nowMs=Date.now();
+    if(nowMs-lastUserInputAt>ROOM_STALE_MS){
+      closeCurrentRoom('inactive');
+      return;
+    }
+    roomRef.child('boats/'+mySlot).update({active:true,lastSeen:nowMs,lastInput:lastUserInputAt});
+    roomRef.update({updatedAt:nowMs});
+    if(isHost)sweepStaleRoomMembers();
+  },15000);
+}
+function stopOnlineHeartbeat(){if(onlineHeartbeatTimer){clearInterval(onlineHeartbeatTimer);onlineHeartbeatTimer=null;}}
+function sweepStaleRoomMembers(){
+  if(!roomRef)return;
+  const nowMs=Date.now();
+  roomRef.child('boats').once('value',snap=>{
+    const data=snap.val()||{};
+    let activeCount=0;
+    const updates={};
+    for(let i=0;i<4;i++){
+      const b=data[i];
+      if(!b)continue;
+      const stale=nowMs-(b.lastInput||b.lastSeen||0)>ROOM_STALE_MS;
+      if(stale)updates[i+'/active']=false;
+      else if(b.active!==false)activeCount++;
+    }
+    if(Object.keys(updates).length)roomRef.child('boats').update(updates);
+    if(activeCount<=0)roomRef.remove();
+  });
+}
+function closeCurrentRoom(reason){
+  const rr=roomRef, slot=mySlot, host=isHost;
+  if(rr){
+    if(host){rr.remove();}
+    else if(slot!==null){rr.child('boats/'+slot).update({active:false,leftAt:Date.now(),leftReason:reason||'left'});}
+  }
+  cleanupFB();
+  if(reason==='inactive'){showMenu();alert('Online room closed after 5 minutes without input.');}
+}
 function createRoom(){
   if(!initFirebase()){showOnlineErr('Firebase not configured. See setup instructions.');return;}
   const playerName=requirePlayerName(); if(!playerName)return;
+  stopRoomBrowser();
   roomId=randRoomCode();isHost=true;
   mySlot=0;mySlotIdx=0;
   onlineMode=true;
+  lastUserInputAt=Date.now();
   roomRef=db.ref('rooms/'+roomId);
-  // Write initial room data
+  const nowMs=Date.now();
   roomRef.set({
-    phase:'waiting',createdAt:Date.now(),
+    phase:'waiting',createdAt:nowMs,updatedAt:nowMs,hostSlot:0,
     wind:{from:wFrom,target:wTarget},
     marks:markLayout(),
-    boats:{0:{slot:0,col:BOAT_COLS[0],name:boatFullName(0,playerName),playerName:playerName,active:true,lastSeen:Date.now(),x:START_POS[0].x,y:START_POS[0].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0}}
+    boats:{0:{slot:0,col:BOAT_COLS[0],name:boatFullName(0,playerName),playerName:playerName,active:true,lastSeen:nowMs,lastInput:nowMs,x:START_POS[0].x,y:START_POS[0].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0}}
   });
+  try{roomRef.onDisconnect().remove();}catch(e){}
+  startOnlineHeartbeat();
   showWaitRoom();
 }
 
-function joinRoom(){
+function joinRoom(roomCode){
   if(!initFirebase()){showOnlineErr('Firebase not configured.');return;}
   const playerName=requirePlayerName(); if(!playerName)return;
-  let code=document.getElementById('roomInput').value.trim().toUpperCase();
-  if(code.length<4){showOnlineErr('Enter a valid room code');return;}
+  let code=(roomCode||document.getElementById('roomInput').value||'').trim().toUpperCase();
+  if(code.length<4){showOnlineErr('Choose an open room to join');return;}
+  stopRoomBrowser();
   roomId=code;isHost=false;
   onlineMode=true;
+  lastUserInputAt=Date.now();
   roomRef=db.ref('rooms/'+roomId);
   roomRef.once('value',snap=>{
     let data=snap.val();
-    if(!data){showOnlineErr('Room not found: '+code);return;}
-    if(data.phase==='race'||data.phase==='done'){showOnlineErr('Race already in progress');return;}
-    // Find free slot
-    let takenSlots=Object.keys(data.boats||{}).map(Number);
+    if(!data){showOnlineErr('Room not found: '+code);refreshRoomBrowser(false);return;}
+    if(Date.now()-((data.updatedAt||data.createdAt)||0)>ROOM_STALE_MS){showOnlineErr('That room has expired');roomRef.remove();refreshRoomBrowser(false);return;}
+    if(data.phase==='race'||data.phase==='done'){showOnlineErr('Race already in progress');refreshRoomBrowser(false);return;}
+    let takenSlots=Object.keys(data.boats||{}).filter(k=>data.boats[k]&&data.boats[k].active!==false).map(Number);
     let freeSlot=-1;
     for(let i=0;i<4;i++){if(!takenSlots.includes(i)){freeSlot=i;break;}}
-    if(freeSlot<0){showOnlineErr('Room is full (4 players)');return;}
+    if(freeSlot<0){showOnlineErr('Room is full (4 players)');refreshRoomBrowser(false);return;}
     mySlot=freeSlot;mySlotIdx=freeSlot;
-    // Register in room
-    roomRef.child('boats/'+mySlot).set({slot:mySlot,col:BOAT_COLS[mySlot],name:boatFullName(mySlot,playerName),playerName:playerName,active:true,lastSeen:Date.now(),x:START_POS[mySlot].x,y:START_POS[mySlot].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0});
+    const nowMs=Date.now();
+    roomRef.child('boats/'+mySlot).set({slot:mySlot,col:BOAT_COLS[mySlot],name:boatFullName(mySlot,playerName),playerName:playerName,active:true,lastSeen:nowMs,lastInput:nowMs,x:START_POS[mySlot].x,y:START_POS[mySlot].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0});
+    roomRef.update({updatedAt:nowMs});
+    try{roomRef.child('boats/'+mySlot).onDisconnect().update({active:false,leftAt:Date.now(),leftReason:'disconnect'});}catch(e){}
+    startOnlineHeartbeat();
     showWaitRoom();
   });
 }
@@ -2918,9 +3023,9 @@ function joinRoom(){
 function showWaitRoom(){
   hideAllOverlays();
   document.getElementById('waitScreen').style.display='flex';
-  document.getElementById('roomCodeDisplay').textContent=roomId;
+  document.getElementById('roomCodeDisplay').textContent='Room '+roomId;
   if(isHost)document.getElementById('startOnlineBtn').style.display='block';
-  // Listen for boats updates
+  else document.getElementById('startOnlineBtn').style.display='none';
   let boatsListener=roomRef.child('boats').on('value',snap=>{
     let data=snap.val()||{};
     let wl=document.getElementById('waitList');wl.innerHTML='';
@@ -2928,7 +3033,8 @@ function showWaitRoom(){
     for(let i=0;i<4;i++){
       let bd=data[i];
       let div=document.createElement('div');div.className='wslot';
-      if(bd&&bd.active){
+      const fresh=bd&&(Date.now()-(bd.lastInput||bd.lastSeen||0)<ROOM_STALE_MS);
+      if(bd&&bd.active!==false&&fresh){
         div.style.borderColor=BOAT_COLS[i];div.style.color=BOAT_COLS[i];div.style.background='rgba(0,0,0,.3)';
         div.textContent=(bd.name||boatFullName(i,bd.playerName||''))+' '+(i===mySlotIdx?'← YOU':'✓');
         count++;
@@ -2941,29 +3047,28 @@ function showWaitRoom(){
     document.getElementById('waitStatus').textContent=count+' player'+(count!==1?'s':'')+ ' ready';
   });
   fbListeners.push(()=>roomRef.child('boats').off('value',boatsListener));
-  // Listen for phase change (host starts race)
   let phaseListener=roomRef.child('phase').on('value',snap=>{
     if(snap.val()==='pre')startOnlineRace();
     if(snap.val()==='race'&&phase!=='race')phase='race';
+    if(snap.val()===null){cleanupFB();showMenu();}
   });
   fbListeners.push(()=>roomRef.child('phase').off('value',phaseListener));
 }
 
 function hostStartRace(){
   if(!isHost||!roomRef)return;
-  roomRef.update({phase:'pre'});
+  roomRef.update({phase:'pre',updatedAt:Date.now()});
 }
 
 function startOnlineRace(){
   hideAllOverlays();
   roomRef.child('marks').once('value',snap=>{ if(snap.exists()){applyMarkLayout(snap.val());} });
-  // Build boats array from Firebase
   boats=[];
   roomRef.child('boats').once('value',snap=>{
     let data=snap.val()||{};
     for(let i=0;i<4;i++){
       let bd=data[i];
-      if(bd){
+      if(bd&&bd.active!==false){
         boats[i]=mkBoat(i);
         boats[i].name=bd.name||boatFullName(i,bd.playerName||'');
         boats[i].playerName=bd.playerName||'';
@@ -2971,7 +3076,6 @@ function startOnlineRace(){
         if(i!==mySlotIdx)boats[i].spd=bd.spd||0;
       }
     }
-    // Show active boat huds
     [document.getElementById('hud3'),document.getElementById('hud4')].forEach(el=>{
       el.style.display=boats[2]||boats[3]?'':'none';
     });
@@ -2980,13 +3084,11 @@ function startOnlineRace(){
     initGameCommon(mySlotIdx);
     styleMyPanel(mySlotIdx);
     updTMy=setupTrack('mySt','myTh','my');
-    // Listen for remote boat updates
     let remoteListener=roomRef.child('boats').on('value',snap2=>{
       let d=snap2.val()||{};
       for(let i=0;i<4;i++){
         if(i===mySlotIdx||!boats[i])continue;
-        let bd2=d[i];if(!bd2)continue;
-        // Update remote boat from Firebase
+        let bd2=d[i];if(!bd2||bd2.active===false)continue;
         let b=boats[i];
         b.x=bd2.x||b.x;b.y=bd2.y||b.y;b.head=bd2.head||b.head;
         b.spd=bd2.spd||0;b.sa=bd2.sa||45;b.ssa=bd2.ssa||0;
@@ -2996,7 +3098,6 @@ function startOnlineRace(){
       }
     });
     fbListeners.push(()=>roomRef.child('boats').off('value',remoteListener));
-    // Host syncs wind
     if(!isHost){
       let windListener=roomRef.child('wind').on('value',snap3=>{let d3=snap3.val();if(d3){wFrom=d3.from||270;wTarget=d3.target||270;}});
       fbListeners.push(()=>roomRef.child('wind').off('value',windListener));
@@ -3004,12 +3105,9 @@ function startOnlineRace(){
   });
 }
 
-function leaveRoom(){
-  if(roomRef&&mySlot!==null)roomRef.child('boats/'+mySlot+'/active').set(false);
-  cleanupFB();showMenu();
-}
-function cleanupFB(){fbListeners.forEach(f=>f());fbListeners=[];roomRef=null;roomId=null;isHost=false;}
-function showOnlineErr(msg){document.getElementById('onlineErr').textContent=msg;}
+function leaveRoom(){closeCurrentRoom('left');showMenu();}
+function cleanupFB(){stopOnlineHeartbeat();fbListeners.forEach(f=>f());fbListeners=[];roomRef=null;roomId=null;isHost=false;mySlot=null;onlineMode=false;}
+function showOnlineErr(msg){const el=document.getElementById('onlineErr');if(el)el.textContent=msg||'';}
 
 
 
@@ -3161,7 +3259,7 @@ function hideAllOverlays(){
   const mo=document.getElementById('mo');if(mo)mo.style.display='none';
   const boy=document.getElementById('prizeBoyFace');if(boy){boy.classList.remove('show');boy.removeAttribute('data-prize');boy.setAttribute('aria-hidden','true');}
 }
-function showMenu(){
+function showMenu(){stopRoomBrowser();
   selectedPrizeKind=null;prizeFaceActive=false;courseEditMode=false;cleanupFB();phase='menu';onlineMode=false;localP2=false;vsAI=false;
   const pd=document.getElementById('prizeDisplay');if(pd)pd.innerHTML='';
   const p2=document.getElementById('p2Panel');if(p2)p2.style.display='none';
@@ -3170,7 +3268,7 @@ function showMenu(){
   hideAllOverlays();const menu=document.getElementById('menuScreen');if(menu)menu.style.display='flex';
 }
 function showLocalSetup(){courseEditMode=false;hideAllOverlays();const el=document.getElementById('localScreen');if(el)el.style.display='flex';}
-function showOnlineSetup(){courseEditMode=false;hideAllOverlays();restorePlayerName();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';const nameInp=document.getElementById('playerNameInput');if(nameInp&&!nameInp.value)nameInp.focus();}
+function showOnlineSetup(){courseEditMode=false;hideAllOverlays();restorePlayerName();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';refreshRoomBrowser(false);const nameInp=document.getElementById('playerNameInput');if(nameInp&&!nameInp.value)nameInp.focus();}
 function showCourseEditor(){cleanupFB();courseEditMode=true;phase='menu';boats=[];parts=[];if(cdDiv)cdDiv.style.display='none';hideAllOverlays();const el=document.getElementById('editScreen');if(el)el.style.display='flex';}
 function finishCourseEditor(){saveCourseLayout();courseEditMode=false;showMenu();}
 function toggleFS(){let w=document.getElementById('cw');document.fullscreenElement?document.exitFullscreen():(w.requestFullscreen&&w.requestFullscreen());}
