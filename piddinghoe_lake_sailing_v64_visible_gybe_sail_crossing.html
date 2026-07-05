@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — v66 correct capsized hull + close RIB</title>
+<title>Piddinghoe Lake Sailing — v64 visible gybe sail crossing</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
@@ -513,13 +513,6 @@ body { background:#3a6a28; font-family:'Comic Sans MS','Chalkboard SE',cursive; 
 .btn-sm{font-size:12px;padding:6px 14px;border-radius:8px;}
 input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radius:8px;border:2px solid #44bb44;background:#0a1a0a;color:#88ff88;text-align:center;width:180px;outline:none;letter-spacing:3px;text-transform:uppercase;}
 #waitList{display:flex;flex-direction:column;gap:5px;min-width:220px;}
-.room-browser{width:min(420px,88vw);max-height:210px;overflow:auto;display:flex;flex-direction:column;gap:7px;padding:3px;}
-.room-card{width:100%;border:2px solid #447744;border-radius:12px;background:rgba(0,0,0,.24);padding:8px 10px;display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;text-align:left;}
-.room-card .room-title{font-size:13px;color:#ffee88;font-weight:900;letter-spacing:1px;}
-.room-card .room-players{font-size:10px;color:#aad890;line-height:1.35;}
-.room-card .room-empty{font-size:11px;color:#668866;text-align:center;padding:12px;border:2px dashed #335533;border-radius:10px;background:rgba(0,0,0,.12);}
-.room-card button{grid-row:1 / span 2;grid-column:2;font-size:12px;padding:7px 13px;min-height:36px;}
-.room-refresh{font-size:10px;color:#6f9f6f;min-height:12px;}
 .wslot{padding:6px 10px;border-radius:8px;border:2px solid;font-size:12px;text-align:center;}
 #countdown{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;pointer-events:none;background:rgba(0,0,0,.12);}
 #cdt{font-size:100px;font-weight:900;color:#fff;text-shadow:0 0 40px #0f0,0 4px 20px #000;animation:cdp .35s ease-out;}
@@ -1033,15 +1026,16 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <!-- ONLINE SETUP -->
     <div class="overlay" id="onlineScreen" style="display:none">
       <h1>🌐 Online Play</h1>
-      <p>Enter your name, then create a room or click an open room to join.</p>
+      <p>Create a room or join with a code</p>
       <div style="display:flex;flex-direction:column;gap:5px;align-items:center">
         <label for="playerNameInput" style="font-size:12px;color:#aad890;font-weight:700">Your name</label>
         <input type="text" id="playerNameInput" maxlength="16" placeholder="NAME" style="letter-spacing:1px;text-transform:none" autocomplete="nickname">
       </div>
-      <button class="btn btn-g" onclick="createRoom()">➕ Create New Room</button>
-      <div style="font-size:13px;color:#ffee88;font-weight:900;margin-top:4px">Open rooms</div>
-      <div id="roomBrowser" class="room-browser"><div class="room-empty">Looking for rooms...</div></div>
-      <div id="roomBrowserStatus" class="room-refresh"></div>
+      <button class="btn btn-g" onclick="createRoom()">➕ Create Room</button>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center">
+        <input type="text" id="roomInput" maxlength="6" placeholder="ROOM CODE" oninput="this.value=this.value.toUpperCase()">
+        <button class="btn btn-b btn-sm" onclick="joinRoom()">Join →</button>
+      </div>
       <div id="onlineErr" style="color:#ff8888;font-size:11px;min-height:16px"></div>
       <button class="btn btn-sm btn-r" onclick="showMenu()">← Back</button>
     </div>
@@ -1050,7 +1044,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <div class="overlay" id="waitScreen" style="display:none">
       <h1>⚓ Waiting Room</h1>
       <p id="roomCodeDisplay" style="font-size:18px;color:#ffee88;letter-spacing:4px;font-weight:700"></p>
-      <p style="font-size:11px">Friends can now click this room from the Online Play screen.</p>
+      <p style="font-size:11px">Share this code with friends!</p>
       <div id="waitList"></div>
       <button class="btn btn-g" id="startOnlineBtn" onclick="hostStartRace()" style="display:none">🏁 Start Race!</button>
       <p id="waitStatus" style="font-size:11px;color:#7ab870">Waiting for players...</p>
@@ -1104,7 +1098,6 @@ const FB_CONFIG = {apiKey: "AIzaSyC7qzehJs1HewQbagbc926BH5wMhnsXvJ8",
 };
 let fbApp, db, roomRef, mySlot=null, roomId=null, isHost=false;
 let onlineMode=false, fbListeners=[];
-let roomBrowserOff=null;
 
 function initFirebase(){
   if(fbApp) return true;
@@ -1629,18 +1622,18 @@ function isTypingInTextBox(e){
 /* v54 FIX: the room-code input owns ALL keyboard input while focused.
    This prevents any gameplay or developer shortcut (A/W/S/D, H, P, F9, arrows, etc.)
    from firing while a player is typing a room code. Enter still joins the room. */
-(function protectOnlineTextInputs(){
+(function protectRoomCodeInput(){
+  const roomInput=document.getElementById('roomInput');
   const nameInput=document.getElementById('playerNameInput');
-  [nameInput].forEach(function(inp){
+  [roomInput,nameInput].forEach(function(inp){
     if(!inp)return;
     ['keydown','keyup','keypress'].forEach(function(type){
       inp.addEventListener(type,function(e){
         e.stopPropagation();
         if(type==='keydown' && e.key==='Enter'){
           e.preventDefault();
-          const btn=document.querySelector('#onlineScreen .room-card button');
-          if(btn)btn.focus();
-          else createRoom();
+          if(inp===nameInput && roomInput){roomInput.focus();}
+          else joinRoom();
         }
       },true);
     });
@@ -1651,6 +1644,7 @@ document.addEventListener('keydown',function(e){
   // v53 FIX: when entering an online room code, A/W/S/D must type into the box,
   // not be swallowed by the sailing controls.
   if(isTypingInTextBox(e)){
+    if(e.key==='Enter' && e.target && e.target.id==='roomInput') joinRoom();
     return;
   }
   if(GAME_KEYS.has(e.key)){
@@ -2883,7 +2877,6 @@ function restorePlayerName(){
 function createRoom(){
   if(!initFirebase()){showOnlineErr('Firebase not configured. See setup instructions.');return;}
   const playerName=requirePlayerName(); if(!playerName)return;
-  stopRoomBrowser();
   roomId=randRoomCode();isHost=true;
   mySlot=0;mySlotIdx=0;
   onlineMode=true;
@@ -2898,24 +2891,23 @@ function createRoom(){
   showWaitRoom();
 }
 
-function joinRoom(code){
+function joinRoom(){
   if(!initFirebase()){showOnlineErr('Firebase not configured.');return;}
   const playerName=requirePlayerName(); if(!playerName)return;
-  code=(code||'').trim().toUpperCase();
-  if(code.length<4){showOnlineErr('Choose an open room to join');return;}
-  stopRoomBrowser();
+  let code=document.getElementById('roomInput').value.trim().toUpperCase();
+  if(code.length<4){showOnlineErr('Enter a valid room code');return;}
   roomId=code;isHost=false;
   onlineMode=true;
   roomRef=db.ref('rooms/'+roomId);
   roomRef.once('value',snap=>{
     let data=snap.val();
-    if(!data){showOnlineErr('Room not found: '+code);startRoomBrowser();return;}
-    if(data.phase==='race'||data.phase==='done'){showOnlineErr('Race already in progress');startRoomBrowser();return;}
+    if(!data){showOnlineErr('Room not found: '+code);return;}
+    if(data.phase==='race'||data.phase==='done'){showOnlineErr('Race already in progress');return;}
     // Find free slot
-    let takenSlots=Object.keys(data.boats||{}).filter(k=>data.boats[k]&&data.boats[k].active!==false).map(Number);
+    let takenSlots=Object.keys(data.boats||{}).map(Number);
     let freeSlot=-1;
     for(let i=0;i<4;i++){if(!takenSlots.includes(i)){freeSlot=i;break;}}
-    if(freeSlot<0){showOnlineErr('Room is full (4 players)');startRoomBrowser();return;}
+    if(freeSlot<0){showOnlineErr('Room is full (4 players)');return;}
     mySlot=freeSlot;mySlotIdx=freeSlot;
     // Register in room
     roomRef.child('boats/'+mySlot).set({slot:mySlot,col:BOAT_COLS[mySlot],name:boatFullName(mySlot,playerName),playerName:playerName,active:true,lastSeen:Date.now(),x:START_POS[mySlot].x,y:START_POS[mySlot].y,head:270,spd:0,sa:45,ssa:0,lap:0,leg:0,started:false,done:false,bumpT:0});
@@ -2923,55 +2915,7 @@ function joinRoom(code){
   });
 }
 
-function roomPlayerSummary(boatsData){
-  let names=[];
-  for(let i=0;i<4;i++){
-    const bd=boatsData&&boatsData[i];
-    if(bd&&bd.active!==false){
-      names.push((bd.name||boatFullName(i,bd.playerName||'')));
-    }
-  }
-  return names;
-}
-function stopRoomBrowser(){
-  if(roomBrowserOff){try{roomBrowserOff();}catch(e){} roomBrowserOff=null;}
-}
-function startRoomBrowser(){
-  stopRoomBrowser();
-  const list=document.getElementById('roomBrowser');
-  const status=document.getElementById('roomBrowserStatus');
-  if(!list||!initFirebase())return;
-  if(status)status.textContent='Live room list';
-  const ref=db.ref('rooms');
-  const cb=ref.on('value',snap=>{
-    const all=snap.val()||{};
-    const cards=[];
-    Object.keys(all).forEach(code=>{
-      const r=all[code]||{};
-      if(r.phase&&r.phase!=='waiting')return;
-      const players=roomPlayerSummary(r.boats||{});
-      if(players.length<1||players.length>=4)return;
-      cards.push({code,createdAt:r.createdAt||0,players});
-    });
-    cards.sort((a,b)=>b.createdAt-a.createdAt);
-    list.innerHTML='';
-    if(!cards.length){
-      list.innerHTML='<div class="room-empty">No open rooms yet. Create one and your friends will see it here.</div>';
-      return;
-    }
-    cards.slice(0,12).forEach(card=>{
-      const div=document.createElement('div');div.className='room-card';
-      const title=document.createElement('div');title.className='room-title';title.textContent='Room '+card.code+' · '+card.players.length+'/4';
-      const players=document.createElement('div');players.className='room-players';players.textContent=card.players.join(' · ');
-      const btn=document.createElement('button');btn.className='btn btn-b btn-sm';btn.textContent='Join';btn.onclick=()=>joinRoom(card.code);
-      div.appendChild(title);div.appendChild(players);div.appendChild(btn);list.appendChild(div);
-    });
-  });
-  roomBrowserOff=()=>ref.off('value',cb);
-}
-
 function showWaitRoom(){
-  stopRoomBrowser();
   hideAllOverlays();
   document.getElementById('waitScreen').style.display='flex';
   document.getElementById('roomCodeDisplay').textContent=roomId;
@@ -3064,7 +3008,7 @@ function leaveRoom(){
   if(roomRef&&mySlot!==null)roomRef.child('boats/'+mySlot+'/active').set(false);
   cleanupFB();showMenu();
 }
-function cleanupFB(){stopRoomBrowser();fbListeners.forEach(f=>f());fbListeners=[];roomRef=null;roomId=null;isHost=false;}
+function cleanupFB(){fbListeners.forEach(f=>f());fbListeners=[];roomRef=null;roomId=null;isHost=false;}
 function showOnlineErr(msg){document.getElementById('onlineErr').textContent=msg;}
 
 
@@ -3226,7 +3170,7 @@ function showMenu(){
   hideAllOverlays();const menu=document.getElementById('menuScreen');if(menu)menu.style.display='flex';
 }
 function showLocalSetup(){courseEditMode=false;hideAllOverlays();const el=document.getElementById('localScreen');if(el)el.style.display='flex';}
-function showOnlineSetup(){courseEditMode=false;hideAllOverlays();restorePlayerName();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';const list=document.getElementById('roomBrowser');if(list)list.innerHTML='<div class="room-empty">Looking for rooms...</div>';startRoomBrowser();const nameInp=document.getElementById('playerNameInput');if(nameInp&&!nameInp.value)nameInp.focus();}
+function showOnlineSetup(){courseEditMode=false;hideAllOverlays();restorePlayerName();const el=document.getElementById('onlineScreen');if(el)el.style.display='flex';const err=document.getElementById('onlineErr');if(err)err.textContent='';const nameInp=document.getElementById('playerNameInput');if(nameInp&&!nameInp.value)nameInp.focus();}
 function showCourseEditor(){cleanupFB();courseEditMode=true;phase='menu';boats=[];parts=[];if(cdDiv)cdDiv.style.display='none';hideAllOverlays();const el=document.getElementById('editScreen');if(el)el.style.display='flex';}
 function finishCourseEditor(){saveCourseLayout();courseEditMode=false;showMenu();}
 function toggleFS(){let w=document.getElementById('cw');document.fullscreenElement?document.exitFullscreen():(w.requestFullscreen&&w.requestFullscreen());}
@@ -4021,228 +3965,5 @@ drawBoat=function(b){
 })();
 
 </script>
-
-
-<script>
-/* ═══════════════════════════════════════════════════════════════════════════
-   v66: corrected capsize geometry and RIB approach
-   - capsized hull is half of the top-view hull split along the long axis
-   - mast foot sits on the flat side / centreline
-   - boom is parallel to the flat side; sail apex is the masthead out in the water
-   - RIB starts approaching when the boat is about halfway through capsizing
-   - RIB stops very close alongside on the safe side, not over the sail
-   ═══════════════════════════════════════════════════════════════════════════ */
-(function(){
-  function v66Clamp(v,a,b){return Math.max(a,Math.min(b,v));}
-  function v66Smooth(t){return t*t*(3-2*t);}
-  function v66Basis(b){
-    const h=((b&&b.capsizeHead)||((b&&b.head)||0))*Math.PI/180;
-    return {fx:Math.sin(h), fy:-Math.cos(h), sx:Math.cos(h), sy:Math.sin(h)};
-  }
-  function v66Point(b,forward,side){
-    const q=v66Basis(b);
-    return {x:b.x+q.fx*forward+q.sx*side, y:b.y+q.fy*forward+q.sy*side};
-  }
-  function v66SailSide(b){
-    let s=(b&&b.capsizeGybeToSide)||((b&&b.capsizeBoomSide)||0)||((b&&b.ssa<0)?-1:1);
-    return s<0?-1:1;
-  }
-
-  // Record the sail side that the boat finally gybed onto, so every later drawing
-  // agrees about which side the mast and sail are lying in the water.
-  const __v66_updateCapsizedBoat = updateCapsizedBoat;
-  updateCapsizedBoat=function(b,dt){
-    if(b && b.capsizePhase==='gybeSwing'){
-      b.capsizeBoomSide = (b.capsizeGybeToSide||b.capsizeBoomSide||1);
-    }
-    __v66_updateCapsizedBoat(b,dt);
-  };
-
-  function v66DrawHalfHull(b,rollProgress,rightProgress){
-    const side=v66SailSide(b);
-    const hullSide=-side; // visible hull half is on the side opposite the sail in the water
-    const q=v66Basis(b);
-    const p=v66Clamp(rollProgress,0,1);
-    const rp=v66Clamp(rightProgress||0,0,1);
-    const beam=(20*BSC)*(1-rp*.42);
-    const bow=v66Point(b,40*BSC,0);
-    const stern=v66Point(b,-33*BSC,0);
-    const mid1=v66Point(b,25*BSC,hullSide*beam*.95);
-    const mid2=v66Point(b,-6*BSC,hullSide*beam*1.15);
-    const transom=v66Point(b,-33*BSC,hullSide*beam*.55);
-
-    ctx.save();
-    ctx.globalAlpha=v66Clamp(.38+.58*p,0,1);
-    ctx.fillStyle=b.col;
-    ctx.strokeStyle='rgba(0,0,0,.68)';
-    ctx.lineWidth=2.5;
-    // One-half of the top-view hull: flat centreline plus the curved outside edge.
-    ctx.beginPath();
-    ctx.moveTo(bow.x,bow.y);          // flat side / centreline starts at bow
-    ctx.lineTo(stern.x,stern.y);      // flat side / centreline to stern
-    ctx.lineTo(transom.x,transom.y);
-    ctx.bezierCurveTo(mid2.x,mid2.y,mid1.x,mid1.y,bow.x,bow.y);
-    ctx.closePath();
-    ctx.fill();ctx.stroke();
-
-    // Emphasise the flat split line: this is the boat's long axis.
-    ctx.strokeStyle='rgba(25,25,25,.82)';
-    ctx.lineWidth=2.2;
-    ctx.beginPath();ctx.moveTo(bow.x,bow.y);ctx.lineTo(stern.x,stern.y);ctx.stroke();
-
-    // Thin dark keel/underside line: the more capsized it is, the thinner and darker it looks.
-    ctx.globalAlpha=v66Clamp(.2+.65*p,0,1);
-    ctx.strokeStyle='rgba(30,22,16,.78)';ctx.lineWidth=1.6;
-    const keelA=v66Point(b,31*BSC,hullSide*beam*.46), keelB=v66Point(b,-25*BSC,hullSide*beam*.55);
-    ctx.beginPath();ctx.moveTo(keelA.x,keelA.y);ctx.lineTo(keelB.x,keelB.y);ctx.stroke();
-    ctx.restore();
-  }
-
-  function v66DrawCapsizedSail(b,rollProgress,rightProgress){
-    const side=v66SailSide(b);
-    const p=v66Clamp(rollProgress,0,1);
-    const rp=v66Clamp(rightProgress||0,0,1);
-    const appear=v66Clamp((p-.30)/.55,0,1)*(1-rp);
-    if(appear<=0)return;
-
-    // Mast foot on the flat side / centreline.  Boom parallel to the flat side (fore-aft).
-    const mastFoot=v66Point(b,8*BSC,0);
-    const boomA=v66Point(b,24*BSC,side*8*BSC);
-    const boomB=v66Point(b,-30*BSC,side*8*BSC);
-    // Masthead is the far point, perpendicular to the boat's long axis.
-    const mastHead=v66Point(b,7*BSC,side*(116*BSC+22*BSC*p));
-
-    ctx.save();
-    ctx.globalAlpha=.94*appear;
-    ctx.fillStyle='rgba(252,252,246,.94)';
-    ctx.strokeStyle='rgba(48,86,130,.76)';
-    ctx.lineWidth=2.6;
-    ctx.beginPath();ctx.moveTo(boomA.x,boomA.y);ctx.lineTo(boomB.x,boomB.y);ctx.lineTo(mastHead.x,mastHead.y);ctx.closePath();ctx.fill();ctx.stroke();
-
-    // Boom: two nearest points of the triangle, parallel with the flat hull side.
-    ctx.strokeStyle='rgba(104,58,24,.96)';ctx.lineWidth=4.5;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(boomA.x,boomA.y);ctx.lineTo(boomB.x,boomB.y);ctx.stroke();
-
-    // Mast: foot on flat side to the far masthead point.
-    ctx.strokeStyle='rgba(55,55,55,.94)';ctx.lineWidth=3.4;
-    ctx.beginPath();ctx.moveTo(mastFoot.x,mastFoot.y);ctx.lineTo(mastHead.x,mastHead.y);ctx.stroke();
-
-    // Mast-foot dot on the centreline makes the geometry clear.
-    ctx.fillStyle='rgba(40,40,40,.95)';ctx.beginPath();ctx.arc(mastFoot.x,mastFoot.y,3.2,0,Math.PI*2);ctx.fill();
-    ctx.restore();
-  }
-
-  drawCapsizeWobbleBoat=function(b){
-    const p=v66Clamp(b.capsizeWobbleStrength||0,0,1);
-    const wobble=Math.sin(now*(2.0+3.6*p)+b.slot)*(3+24*p);
-    const bob=Math.sin(now*2.0+b.slot)*1.3*p;
-    ctx.save();ctx.translate(0,bob);
-
-    if(p<.48){
-      // Early stage: same heading, increasingly narrow hull as it rolls about its long axis.
-      const q=v66Basis(b);
-      const beam=(19*BSC)*(1-.82*p);
-      const side=v66SailSide(b);
-      const rollSide=-side;
-      const bow=v66Point(b,40*BSC,0);
-      const stern=v66Point(b,-32*BSC,0);
-      const port=v66Point(b,-28*BSC,rollSide*beam);
-      const star=v66Point(b,-28*BSC,-rollSide*beam*.45);
-      ctx.save();
-      ctx.globalAlpha=v66Clamp(1-.55*p,.35,1);
-      ctx.fillStyle=b.col;ctx.strokeStyle='rgba(0,0,0,.62)';ctx.lineWidth=2.3;
-      ctx.beginPath();ctx.moveTo(bow.x,bow.y);ctx.lineTo(port.x,port.y);ctx.lineTo(star.x,star.y);ctx.closePath();ctx.fill();ctx.stroke();
-      ctx.strokeStyle='rgba(30,22,16,.55)';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.moveTo(bow.x,bow.y);ctx.lineTo(stern.x,stern.y);ctx.stroke();
-      ctx.restore();
-    }else{
-      // From halfway over, switch visibly into the correct half-hull shape.
-      const hp=v66Smooth((p-.48)/.52);
-      v66DrawCapsizedSail(b,.38+.62*hp,0);
-      v66DrawHalfHull(b,hp,0);
-    }
-    ctx.restore();
-
-    // Rescue boat starts moving as the capsize passes halfway.
-    if(p>.50) drawRescueRIB(b);
-
-    ctx.save();ctx.globalAlpha=.12+.30*p;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.setLineDash([6,8]);
-    ctx.beginPath();ctx.ellipse(b.x,b.y,20+46*p,12+25*p,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-  };
-
-  drawCapsizedBoatShape=function(b,rightProgress=0){
-    const rp=v66Clamp(rightProgress||0,0,1);
-    const p=1-rp;
-    const bob=Math.sin(now*2.0+b.slot)*2*p;
-    ctx.save();ctx.translate(0,bob);
-    v66DrawCapsizedSail(b,1,rp);
-    v66DrawHalfHull(b,p,rp);
-    ctx.restore();
-    ctx.save();ctx.globalAlpha=.52*p;ctx.strokeStyle='#bfefff';ctx.lineWidth=2;ctx.setLineDash([6,7]);
-    ctx.beginPath();ctx.ellipse(b.x,b.y,58+Math.sin(now*3)*2,32+Math.cos(now*2)*2,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-  };
-
-  drawRightingBoat=function(b){
-    const rp=v66Clamp(1-(b.capsizeRightT||0)/CAPSIZE_RIGHT_TIME,0,1);
-    drawCapsizedBoatShape(b,rp);
-    if(rp>.70){ctx.save();ctx.globalAlpha=v66Clamp((rp-.70)/.30,0,1);__v61_drawBoat(b);ctx.restore();}
-  };
-
-  rescueSidePoint=function(b){
-    const q=v66Basis(b);
-    const sailSide=v66SailSide(b);
-    const ribSide=-sailSide;
-    // Close enough to look like a rescue, but still clear of the mast/sail triangle.
-    return {x:b.x+q.sx*ribSide*45-q.fx*8, y:b.y+q.sy*ribSide*45-q.fy*8};
-  };
-
-  drawRescueRIB=function(b){
-    let t=0;
-    if(b.capsizePhase==='wobble'){
-      const p=v66Clamp(b.capsizeWobbleStrength||0,0,1);
-      t=v66Clamp((p-.50)/.38,0,1); // starts halfway through capsize, arrives before splash/rescue hold
-    }else if(b.capsizePhase==='rescue'){
-      t=1;
-    }else if(b.capsizePhase==='righting'){
-      t=1;
-    }else{
-      t=.08;
-    }
-    if(t<=0)return;
-    const alongside=rescueSidePoint(b);
-    const ease=v66Smooth(v66Clamp(t,0,1));
-    let rx=RIB_HOME.x+(alongside.x-RIB_HOME.x)*ease;
-    let ry=RIB_HOME.y+(alongside.y-RIB_HOME.y)*ease;
-    if(t>=.98){rx=alongside.x+Math.sin(now*2.1)*1.4;ry=alongside.y+Math.cos(now*2.0)*1.1;}
-    const ang=Math.atan2(b.y-ry,b.x-rx);
-    ctx.save();ctx.translate(rx,ry);ctx.rotate(ang+Math.PI/2);ctx.scale(.78,.78);
-    ctx.fillStyle='#ff7a00';ctx.strokeStyle='rgba(0,0,0,.58)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.ellipse(0,0,17,31,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle='#222';ctx.beginPath();ctx.roundRect(-9,-18,18,30,5);ctx.fill();
-    ctx.fillStyle='#fff';ctx.font='bold 10px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('RIB',0,-1);
-    ctx.fillStyle='#333';ctx.fillRect(-5,28,10,8);
-    ctx.restore();
-
-    if(t<.98){ctx.save();ctx.strokeStyle='rgba(255,255,255,.30)';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(RIB_HOME.x,RIB_HOME.y);ctx.lineTo(rx,ry);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
-    if(t>.92){
-      const q=v66Basis(b), ribSide=-v66SailSide(b);
-      const tie={x:b.x+q.sx*ribSide*18-q.fx*2,y:b.y+q.sy*ribSide*18-q.fy*2};
-      ctx.save();ctx.strokeStyle='rgba(255,255,255,.52)';ctx.lineWidth=2;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(tie.x,tie.y);ctx.stroke();ctx.setLineDash([]);ctx.restore();
-    }
-  };
-
-  const __v66_previousDrawBoat = drawBoat;
-  drawBoat=function(b){
-    if(!b)return;
-    if(b.capsizeActive&&b.capsizePhase==='gybeSwing'){__v66_previousDrawBoat(b);return;}
-    if(b.capsizeActive&&b.capsizePhase==='wobble'){drawCapsizeWobbleBoat(b);return;}
-    if(b.capsizeActive&&b.capsizePhase==='rescue'){drawCapsizedBoatShape(b,0);drawRescueRIB(b);return;}
-    if(b.capsizeActive&&b.capsizePhase==='righting'){drawRightingBoat(b);drawRescueRIB(b);return;}
-    if(b.capsizeActive||b.capsizeT>0){drawRescueRIB(b);drawCapsizedBoatShape(b,0);return;}
-    __v61_drawBoat(b);
-  };
-})();
-</script>
-
 </body>
 </html>
