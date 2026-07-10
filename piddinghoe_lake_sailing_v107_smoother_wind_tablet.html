@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — v106</title>
+<title>Piddinghoe Lake Sailing — v107</title>
+<!-- Release version: change this one value when publishing a new build. -->
+<script id="game-version-source">window.PIDDINGHOE_GAME_VERSION='v107';</script>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
@@ -1016,7 +1018,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 <body>
 
 <div id="hud">
-  <div class="hc" id="versionBadge">Piddinghoe Lake Sailing <span>v93</span></div>
+  <div class="hc" id="versionBadge">Piddinghoe Lake Sailing <span>v107</span></div>
   <div class="hc hb1">B1 Red <span id="h1lap">—</span></div>
   <div class="hc hb1">Spd <span id="h1spd">0.0</span></div>
   <div class="hc hb1">Next <span id="h1next">—</span></div>
@@ -1029,7 +1031,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
   <button onclick="toggleFS()" style="font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #4a8a30;background:#1a3a10;color:#7ab870;cursor:pointer">⛶</button>
   <button id="devBtn" onclick="toggleDevPanel()" style="font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #aa8800;background:#2a2000;color:#ffcc44;cursor:pointer">DEV</button>
 </div>
-<div id="tip">Piddinghoe Lake Sailing v94 · A/D steer · S pulls sail IN · W lets sail OUT · scroll=sail · ←→↑↓=P2 local</div>
+<div id="tip">Piddinghoe Lake Sailing v107 · A/D steer · S pulls sail IN · W lets sail OUT · scroll=sail · ←→↑↓=P2 local</div>
 
 <div id="game-area">
   <!-- My touch panel (left, always shown) -->
@@ -1052,14 +1054,14 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
     <div id="countdown"><div id="cdt">10</div></div>
 
     <div id="instructionsBox" aria-label="Keyboard instructions">
-      <strong>Instructions v94</strong><br>
+      <strong>Instructions v107</strong><br>
       Player 1: <b>A</b>/<b>D</b> steer · <b>S</b> pulls sail in · <b>W</b> lets sail out · mouse wheel also sheets sail.<br>
       Player 2: <b>←</b>/<b>→</b> steer · <b>↑</b>/<b>↓</b> sail in/out.
     </div>
 
     <!-- MENU SCREEN -->
     <div class="overlay" id="menuScreen">
-      <h1>⛵ Piddinghoe Lake Sailing v94</h1>
+      <h1>⛵ Piddinghoe Lake Sailing v107</h1>
       <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
         <button class="btn btn-g" onclick="showLocalSetup()">🖥 Local Game (1-2 players)</button>
         <button class="btn btn-b" onclick="showOnlineSetup()">🌐 Online (up to 4 players)</button>
@@ -7117,10 +7119,9 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
   }
 
   function ensurePrizeInvite(){
-    const pc=document.getElementById('prizeChoice'); if(!pc)return;
-    let invite=document.getElementById('v93PrizeInvite');
-    if(!invite){ invite=document.createElement('div'); invite.id='v93PrizeInvite'; pc.insertAdjacentElement('afterend',invite); }
-    invite.innerHTML='🏆 <b>Winner:</b> choose which treats you want as your prize!';
+    // The main winner message already invites the player to choose a snack.
+    // Remove this retired duplicate prompt if an older patch created one.
+    document.querySelectorAll('#v93PrizeInvite,#v94PrizeInvite').forEach(el=>el.remove());
   }
 
   function init(){
@@ -7329,12 +7330,9 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
   }
 
   function ensurePrizeInvite(){
-    let pc=document.getElementById('prizeChoice');
-    if(!pc){ const buttons=[...document.querySelectorAll('button')].filter(b=>/hotdog|pizza|donut|watermelon|ice|🍕|🌭|🍩|🍉/i.test(b.textContent||'')); if(buttons.length)pc=buttons[0].parentElement; }
-    if(!pc)return;
-    let invite=document.getElementById('v94PrizeInvite')||document.getElementById('v93PrizeInvite');
-    if(!invite){invite=document.createElement('div'); invite.id='v94PrizeInvite'; pc.insertAdjacentElement('afterend',invite);} else {invite.id='v94PrizeInvite';}
-    invite.innerHTML='🏆 <b>Winner:</b> choose which treats you want as your prize!';
+    // The main winner message already invites the player to choose a snack.
+    // Remove this retired duplicate prompt if an older patch created one.
+    document.querySelectorAll('#v93PrizeInvite,#v94PrizeInvite').forEach(el=>el.remove());
   }
 
   function init(){
@@ -7391,7 +7389,7 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
 </style>
 <script id="v95-feedback-script">
 (function(){
-  const VERSION='v105';
+  const VERSION=window.PIDDINGHOE_GAME_VERSION;
   const FORM_URL='https://docs.google.com/forms/d/e/1FAIpQLSfYgGNbEPXXWTRcxSom_g21V_LzoJegds_AtEu_gwjD5fnKxg/viewform?usp=header';
   function pad(n){return String(n).padStart(2,'0');}
   function makeCommentNumber(){
@@ -7486,8 +7484,8 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
 <script id="v102-single-authoritative-slider">
 (function(){
   'use strict';
-  const VERSION='v105';
-  const TITLE='Piddinghoe Lake Sailing — v105';
+  const VERSION=window.PIDDINGHOE_GAME_VERSION;
+  const TITLE='Piddinghoe Lake Sailing — '+VERSION;
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const minSail=()=> (typeof MSA==='number' ? MSA : 8);
   const getBoat=who=>{ try{return who==='my'?boats[mySlotIdx]:boats[1];}catch(e){return null;} };
@@ -7500,11 +7498,11 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
   function setLabels(){
     try{document.title=TITLE; const t=document.querySelector('title'); if(t)t.textContent=TITLE;}catch(e){}
     const vb=document.querySelector('#versionBadge span'); if(vb)vb.textContent=VERSION;
-    const h=document.querySelector('#menuScreen h1'); if(h)h.textContent='⛵ Piddinghoe Lake Sailing v105';
-    const instr=document.querySelector('#instructionsBox strong'); if(instr)instr.textContent='Instructions v105';
-    const dev=document.querySelector('#devScreen strong'); if(dev && /Developer/.test(dev.textContent))dev.textContent='Developer shortcuts — v105';
+    const h=document.querySelector('#menuScreen h1'); if(h)h.textContent='⛵ Piddinghoe Lake Sailing '+VERSION;
+    const instr=document.querySelector('#instructionsBox strong'); if(instr)instr.textContent='Instructions '+VERSION;
+    const dev=document.querySelector('#devScreen strong'); if(dev && /Developer/.test(dev.textContent))dev.textContent='Developer shortcuts — '+VERSION;
     const tip=document.getElementById('tip');
-    if(tip)tip.textContent='Piddinghoe Lake Sailing v105 · S pulls sail IN · W lets sail OUT · scroll=sail · slider: OUT top, IN bottom';
+    if(tip)tip.textContent='Piddinghoe Lake Sailing '+VERSION+' · S pulls sail IN · W lets sail OUT · scroll=sail · slider: OUT top, IN bottom';
     document.querySelectorAll('.tp .sw').forEach(sw=>{
       const labs=sw.querySelectorAll('.slbl');
       if(labs[0])labs[0].textContent='OUT ▲';
@@ -7594,11 +7592,12 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
   const getBoat=who=>{ try{return who==='my'?boats[mySlotIdx]:boats[1];}catch(e){return null;} };
 
   function labelAndVersion(){
-    try{document.title='Piddinghoe Lake Sailing — v105';}catch(e){}
-    const vb=document.querySelector('#versionBadge span'); if(vb)vb.textContent='v105';
-    const h=document.querySelector('#menuScreen h1'); if(h)h.textContent='⛵ Piddinghoe Lake Sailing v105';
+    const VERSION=window.PIDDINGHOE_GAME_VERSION;
+    try{document.title='Piddinghoe Lake Sailing — '+VERSION;}catch(e){}
+    const vb=document.querySelector('#versionBadge span'); if(vb)vb.textContent=VERSION;
+    const h=document.querySelector('#menuScreen h1'); if(h)h.textContent='⛵ Piddinghoe Lake Sailing '+VERSION;
     const tip=document.getElementById('tip');
-    if(tip)tip.textContent='Piddinghoe Lake Sailing v105 · S pulls sail IN · W lets sail OUT · scroll=sail · slider dot: OUT top, IN bottom';
+    if(tip)tip.textContent='Piddinghoe Lake Sailing '+VERSION+' · S pulls sail IN · W lets sail OUT · scroll=sail · slider dot: OUT top, IN bottom';
     document.querySelectorAll('.tp .sw').forEach(sw=>{
       const labs=sw.querySelectorAll('.slbl');
       if(labs[0])labs[0].textContent='OUT ▲';
@@ -7662,11 +7661,12 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
     updateDot(trackId,thumbId,who);
   }
   function labels(){
-    try{document.title='Piddinghoe Lake Sailing — v105'; const t=document.querySelector('title'); if(t)t.textContent=document.title;}catch(e){}
-    const vb=document.querySelector('#versionBadge span'); if(vb)vb.textContent='v105';
-    const h=document.querySelector('#menuScreen h1'); if(h)h.textContent='⛵ Piddinghoe Lake Sailing v105';
+    const VERSION=window.PIDDINGHOE_GAME_VERSION;
+    try{document.title='Piddinghoe Lake Sailing — '+VERSION; const t=document.querySelector('title'); if(t)t.textContent=document.title;}catch(e){}
+    const vb=document.querySelector('#versionBadge span'); if(vb)vb.textContent=VERSION;
+    const h=document.querySelector('#menuScreen h1'); if(h)h.textContent='⛵ Piddinghoe Lake Sailing '+VERSION;
     const tip=document.getElementById('tip');
-    if(tip)tip.textContent='Piddinghoe Lake Sailing v105 · S pulls sail IN · W lets sail OUT · slider/touch: OUT top, IN bottom';
+    if(tip)tip.textContent='Piddinghoe Lake Sailing '+VERSION+' · S pulls sail IN · W lets sail OUT · slider/touch: OUT top, IN bottom';
     document.querySelectorAll('.tp .sw').forEach(sw=>{const labs=sw.querySelectorAll('.slbl'); if(labs[0])labs[0].textContent='OUT ▲'; if(labs[1])labs[1].textContent='▼ IN';});
   }
   function bindDirect(trackId,thumbId,who){
@@ -7705,7 +7705,7 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
 <script id="v105-pink-gate-opposite-arcs-and-version">
 (function(){
   'use strict';
-  const GAME_VERSION='v106';
+  const GAME_VERSION=window.PIDDINGHOE_GAME_VERSION;
   const GAME_TITLE='Piddinghoe Lake Sailing — '+GAME_VERSION;
 
   function setGameVersionEverywhere(){
@@ -7866,7 +7866,7 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
 <script id="v105-absolute-final-version-guard">
 (function(){
   'use strict';
-  const GAME_VERSION='v105';
+  const GAME_VERSION=window.PIDDINGHOE_GAME_VERSION;
   const GAME_TITLE='Piddinghoe Lake Sailing — '+GAME_VERSION;
   function applyVersion(){
     try{document.title=GAME_TITLE; const t=document.querySelector('title'); if(t)t.textContent=GAME_TITLE;}catch(e){}
@@ -7957,7 +7957,7 @@ body:-webkit-full-screen #cw canvas{
 <script id="v106-fullscreen-touch-controls-and-version">
 (function(){
   'use strict';
-  const GAME_VERSION='v107';
+  const GAME_VERSION=window.PIDDINGHOE_GAME_VERSION;
   const GAME_TITLE='Piddinghoe Lake Sailing — '+GAME_VERSION;
   function setText(sel,text){const el=document.querySelector(sel); if(el)el.textContent=text;}
   function applyVersion(){
