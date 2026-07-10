@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Piddinghoe Lake Sailing — v81 pink gate then either buoy</title>
+<title>Piddinghoe Lake Sailing — v82 controls audio instructions</title>
 
 <!-- Firebase 9 compat (works as global firebase.* object) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
@@ -956,9 +956,10 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
   <div class="hc" style="margin:0 2px">Wind <span id="hw">W</span></div>
   <button onclick="showMenu()" style="margin-left:auto;font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #4a8a30;background:#1a3a10;color:#7ab870;cursor:pointer">↺ Menu</button>
   <button onclick="toggleFS()" style="font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #4a8a30;background:#1a3a10;color:#7ab870;cursor:pointer">⛶</button>
+  <button onclick="showInstructionsBox(true)" style="font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #4a8a30;background:#1a3a10;color:#aad890;cursor:pointer">? Controls</button>
   <button id="devBtn" onclick="toggleDevPanel()" style="font-size:9px;padding:2px 6px;border-radius:5px;border:1px solid #aa8800;background:#2a2000;color:#ffcc44;cursor:pointer">DEV</button>
 </div>
-<div id="tip">H=next-3-target route hint · A/D+W/S=steer/sail · scroll=sail · ←→↑↓=P2 local</div>
+<div id="tip">H=next-3-target route hint · A/D=steer · S=pull sail in · W=let sail out · scroll=sail · ←→↑↓=P2 local</div>
 
 <div id="game-area">
   <!-- My touch panel (left, always shown) -->
@@ -973,7 +974,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
       <div class="st" id="mySt"><div class="sth" id="myTh"></div></div>
       <div class="slbl">OUT ▼</div>
     </div>
-    <div class="kh">A/D<br>W/S<br>scroll</div>
+    <div class="kh">A/D steer<br>S in<br>W out<br>scroll</div>
   </div>
 
   <div id="cw">
@@ -1091,7 +1092,7 @@ input[type=text]{font-family:inherit;font-size:16px;padding:8px 12px;border-radi
 </div>
 
 <div id="ks">
-  <div class="kg"><span style="color:#ff6644;font-weight:700">MY BOAT:</span><span class="k">A</span>◀<span class="k">D</span>▶<span class="k">W</span>in<span class="k">S</span>out<span class="k">scroll</span>sail<span class="k">H</span>hint</div>
+  <div class="kg"><span style="color:#ff6644;font-weight:700">MY BOAT:</span><span class="k">A</span>◀<span class="k">D</span>▶<span class="k">S</span>in<span class="k">W</span>out<span class="k">scroll</span>sail<span class="k">H</span>hint</div>
   <div class="kg" id="p2ks" style="display:none"><span style="color:#ffcc00;font-weight:700">P2:</span><span class="k">←</span>◀<span class="k">→</span>▶<span class="k">↑</span>in<span class="k">↓</span>out</div>
 </div>
 
@@ -2254,7 +2255,7 @@ function update(dt){
   let mb=boats[mySlotIdx];
   if(mb&&!mb.remote){
     let tL=keys['a']||keys['A']||tBtn.my.l,tR=keys['d']||keys['D']||tBtn.my.r;
-    let shI=keys['w']||keys['W'],shO=keys['s']||keys['S'];
+    let shI=keys['s']||keys['S'],shO=keys['w']||keys['W'];
     updBoat(mb,dt,tL,tR,shI,shO);
   }
 
@@ -4146,7 +4147,7 @@ drawBoat=function(b){
       el.style.color='#ffe4a0';
       el.style.background='#15360e';
     }else{
-      el.textContent='H=next-3-target route hint · A/D+W/S=steer/sail · scroll=sail · ←→↑↓=P2 local';
+      el.textContent='H=next-3-target route hint · A/D=steer · S=pull sail in · W=let sail out · scroll=sail · ←→↑↓=P2 local';
       el.style.color='#7ab870';
       el.style.background='#1a3a10';
     }
@@ -6714,6 +6715,147 @@ try{ document.title='Piddinghoe Lake Sailing — v73 gybe sequence no freeze'; }
       return s;
     };
   }
+})();
+</script>
+
+
+<!-- v82 controls/instructions/audio patch -->
+<style>
+/* v82: compact touch controls for three-finger use.
+   Index/ring fingers steer with the arrows; middle finger sheets the short vertical slider above them. */
+.tp{
+  justify-content:flex-start !important;
+  width:112px !important;
+  padding:7px 7px !important;
+  gap:6px !important;
+}
+.tp .plbl{order:1 !important;}
+.tp .sw{
+  order:2 !important;
+  flex:0 0 auto !important;
+  height:106px !important;
+  min-height:106px !important;
+  width:100% !important;
+  margin-top:2px !important;
+  margin-bottom:2px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:3px !important;
+}
+.tp .st{
+  flex:none !important;
+  height:72px !important;
+  min-height:72px !important;
+  width:24px !important;
+  border-radius:12px !important;
+  margin:0 auto !important;
+}
+.tp .sth{
+  width:34px !important;
+  height:34px !important;
+}
+.tp .rrow{
+  order:3 !important;
+  width:100% !important;
+  display:flex !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+}
+.tp .rb{
+  width:48px !important;
+  height:48px !important;
+  min-width:48px !important;
+  min-height:48px !important;
+}
+.tp .kh{order:4 !important;}
+.v82-instructions{
+  position:fixed;inset:0;z-index:12000;display:none;align-items:center;justify-content:center;
+  background:rgba(3,14,3,.72);padding:18px;
+}
+.v82-instructions .card{
+  width:min(430px,92vw);max-height:88vh;overflow:auto;background:#071807;border:3px solid #77dd77;border-radius:18px;
+  color:#d8ffd8;padding:18px 20px;box-shadow:0 18px 40px rgba(0,0,0,.65);font-family:'Comic Sans MS','Chalkboard SE',cursive;
+}
+.v82-instructions h2{color:#9dff9d;text-align:center;font-size:23px;margin-bottom:10px;}
+.v82-instructions p,.v82-instructions li{font-size:13px;line-height:1.45;color:#bfe8bf;}
+.v82-instructions ul{margin:8px 0 12px 20px;}
+.v82-instructions .key{display:inline-block;background:#142b14;border:1px solid #5fb95f;border-radius:5px;padding:1px 6px;color:#fff;font-family:monospace;font-weight:bold;}
+.v82-instructions .btnrow{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.v82-instructions label{font-size:12px;color:#aad890;display:flex;gap:7px;align-items:center;justify-content:center;margin-top:8px;}
+</style>
+
+<div id="instructionsBox" class="v82-instructions" role="dialog" aria-modal="true" aria-labelledby="instructionsTitle">
+  <div class="card">
+    <h2 id="instructionsTitle">⛵ Controls</h2>
+    <p><b>Keyboard</b></p>
+    <ul>
+      <li><span class="key">A</span> turn left</li>
+      <li><span class="key">D</span> turn right</li>
+      <li><span class="key">S</span> pull sail IN</li>
+      <li><span class="key">W</span> let sail OUT</li>
+      <li><span class="key">Mouse wheel</span> adjust sail</li>
+      <li><span class="key">H</span> show next-route hint</li>
+    </ul>
+    <p><b>Touch screen</b></p>
+    <ul>
+      <li>Use your index and ring fingers on the left/right arrows.</li>
+      <li>Use your middle finger on the short vertical slider above the arrows to pull the sail in or let it out.</li>
+    </ul>
+    <p><b>Course</b>: sail through the pink start gate between the two pink buoys first, then round either pink buoy on the outside before heading to the next mark.</p>
+    <p><b>Warning</b>: an uncontrolled gybe can capsize the boat and bring the RIB out to rescue you.</p>
+    <label><input type="checkbox" id="dontShowInstructionsAgain"> Don’t show this again</label>
+    <div class="btnrow">
+      <button class="btn btn-g btn-sm" onclick="closeInstructionsBox()">Start sailing</button>
+      <button class="btn btn-r btn-sm" onclick="closeInstructionsBox(true)">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // v82: make Andy capsize audio follow immediately after the uncontrolled-gybe audio, with duplicate suppression.
+  var lastAndyCapsizeAt=0;
+  window.playCapsizeSplashSound=function(){
+    try{
+      var nowMs=Date.now();
+      if(nowMs-lastAndyCapsizeAt<6500)return;
+      lastAndyCapsizeAt=nowMs;
+      capsizeSplashSound.pause();
+      capsizeSplashSound.currentTime=0;
+      capsizeSplashSound.volume=1.0;
+      capsizeSplashSound.play().catch(function(){});
+    }catch(e){}
+  };
+  window.playUncontrolledGybeSound=function(){
+    try{
+      uncontrolledGybeSound.pause();
+      uncontrolledGybeSound.currentTime=0;
+      uncontrolledGybeSound.volume=1.0;
+      uncontrolledGybeSound.onended=function(){ window.playCapsizeSplashSound(); };
+      var p=uncontrolledGybeSound.play();
+      if(p&&p.catch)p.catch(function(){ setTimeout(window.playCapsizeSplashSound,900); });
+    }catch(e){ setTimeout(window.playCapsizeSplashSound,900); }
+  };
+  window.playCapsizeSound=window.playUncontrolledGybeSound;
+
+  window.showInstructionsBox=function(force){
+    var box=document.getElementById('instructionsBox');
+    if(!box)return;
+    if(!force && localStorage.getItem('piddinghoeInstructionsSeen')==='yes')return;
+    box.style.display='flex';
+  };
+  window.closeInstructionsBox=function(markOnly){
+    var cb=document.getElementById('dontShowInstructionsAgain');
+    if(cb && cb.checked)localStorage.setItem('piddinghoeInstructionsSeen','yes');
+    var box=document.getElementById('instructionsBox');
+    if(box)box.style.display='none';
+  };
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape')window.closeInstructionsBox(true);
+  });
+  // First-run help, delayed so the existing menu draws first.
+  setTimeout(function(){ window.showInstructionsBox(false); },500);
 })();
 </script>
 
